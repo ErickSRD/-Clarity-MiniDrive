@@ -21,8 +21,8 @@ body {
 /* Modern SweetAlert2 Designs */
 .glass-popup {
   background: rgba(255, 255, 255, 0.8) !important;
-  backdrop-filter: blur(16px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
   border-radius: 24px !important;
   border: 1px solid rgba(255, 255, 255, 0.5) !important;
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15) !important;
@@ -318,6 +318,34 @@ body {
   color: #ef4444;
 }
 
+.folder-card.menu-open {
+  z-index: 1000 !important;
+}
+
+.options-trigger-pill {
+  padding: 2px 8px !important;
+  font-size: 18px !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  border: 1px solid #eef2f7 !important;
+  cursor: pointer;
+}
+
+.options-menu-bottom-right {
+  top: 100% !important;
+  right: 0 !important;
+}
+
+.overlay-fixed {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+}
+
+.mt-3 {
+  margin-top: 0.75rem !important;
+}
+
 /* Centralized Options Menu */
 .options-wrapper {
   position: relative;
@@ -354,6 +382,15 @@ body {
 .options-menu button:hover {
   background: #f1f5f9 !important;
   color: #16a34a !important;
+}
+
+.options-menu button.danger {
+  color: #ef4444 !important;
+}
+
+.options-menu button.danger:hover {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
 }
 
 

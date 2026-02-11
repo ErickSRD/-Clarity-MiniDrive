@@ -16,7 +16,6 @@ const schema = fs.existsSync(schemaPath) ? fs.readFileSync(schemaPath, 'utf8') :
 
 sqlite3.verbose();
 export const db = new sqlite3.Database(dbFile);
-export default db;
 
 if (schema) {
   db.exec(schema, (err) => {

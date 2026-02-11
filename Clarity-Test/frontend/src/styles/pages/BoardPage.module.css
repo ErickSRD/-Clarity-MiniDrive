@@ -49,11 +49,17 @@
   overflow-x: auto;
   padding-bottom: 4px;
   max-width: 100%;
-  scrollbar-width: none; /* Hide scrollbar Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+@supports (scrollbar-width: none) {
+  .tabs {
+    scrollbar-width: none;
+  }
 }
 
 .tabs::-webkit-scrollbar {
-  display: none; /* Hide scrollbar Chrome/Safari */
+  display: none; /* Chrome, Safari and Opera */
 }
 
 .viewToggle {

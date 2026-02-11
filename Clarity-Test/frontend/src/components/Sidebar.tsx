@@ -147,6 +147,7 @@ function FolderNode({
 
 export default function Sidebar({ open }: { open?: boolean }) {
   const navigate = useNavigate()
+  const storageRef = React.useRef<HTMLDivElement>(null)
   const [searchParams] = useSearchParams()
   const currentFolderId = searchParams.get('folder') || undefined
   const { data: user } = useCurrentUser()
@@ -195,6 +196,12 @@ export default function Sidebar({ open }: { open?: boolean }) {
   const percent = Math.min(100, percentRaw)
   const percentRounded = Math.round(percent)
   const statusClass = percentRaw >= 100 ? 'full' : percentRaw >= 80 ? 'almost-full' : 'ok'
+
+  React.useEffect(() => {
+    if (storageRef.current) {
+      storageRef.current.style.setProperty('--storage-width', `${percentRounded}%`)
+    }
+  }, [percentRounded])
 
   return (
     <aside className={`sidebar glass-card ${open ? 'open' : ''}`}>
@@ -273,7 +280,10 @@ export default function Sidebar({ open }: { open?: boolean }) {
       <div className="storage-section">
         <div className="storage-label">ALMACENAMIENTO</div>
         <div className="storage-bar">
-          <div className={`storage-used ${statusClass}`} style={{ width: `${percentRounded}%` }} />
+          <div 
+            ref={storageRef}
+            className={`storage-used ${statusClass}`} 
+          />
         </div>
         <div className="storage-note">{usedMbRaw.toFixed(2)} MB de 1024 MB ({percentRounded}%)</div>
       </div>

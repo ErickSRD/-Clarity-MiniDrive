@@ -52,6 +52,7 @@ export default function AdvancedSearch({ onSearch, onClear }: AdvancedSearchProp
             value={filters.q}
             onChange={handleChange}
             placeholder="Buscar por nombre..."
+            title="Buscar archivos por nombre"
             className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm"
           />
         </div>
@@ -82,6 +83,7 @@ export default function AdvancedSearch({ onSearch, onClear }: AdvancedSearchProp
                 name="type"
                 value={filters.type}
                 onChange={handleChange}
+                title="Filtrar por tipo de archivo"
                 className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
               >
                 <option value="">Cualquiera</option>
@@ -101,6 +103,7 @@ export default function AdvancedSearch({ onSearch, onClear }: AdvancedSearchProp
                 value={filters.department}
                 onChange={handleChange}
                 placeholder="Ej: Contabilidad"
+                title="Filtrar por departamento"
                 className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
               />
             </div>
@@ -112,6 +115,7 @@ export default function AdvancedSearch({ onSearch, onClear }: AdvancedSearchProp
                 value={filters.tags}
                 onChange={handleChange}
                 placeholder="Ej: factura, 2024"
+                title="Filtrar por etiquetas"
                 className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
               />
             </div>
@@ -122,6 +126,7 @@ export default function AdvancedSearch({ onSearch, onClear }: AdvancedSearchProp
                 name="startDate"
                 value={filters.startDate}
                 onChange={handleChange}
+                title="Fecha de inicio"
                 className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
               />
             </div>
@@ -132,6 +137,7 @@ export default function AdvancedSearch({ onSearch, onClear }: AdvancedSearchProp
                 name="endDate"
                 value={filters.endDate}
                 onChange={handleChange}
+                title="Fecha de fin"
                 className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
               />
             </div>

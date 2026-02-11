@@ -136,6 +136,7 @@ export default function ShareModal({ resourceType, resourceId, resourceName, onC
                         <button 
                             onClick={() => handleRevoke(p.user_id, p.permission_type)}
                             className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                            title="Revocar acceso"
                         >
                             <TrashIcon className="w-4 h-4" />
                         </button>

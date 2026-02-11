@@ -169,6 +169,27 @@ export default function BoardPage() {
     });
   }, [normalizedFiles, normalizedAllFiles, selectedTab, folderId, query, sortBy, sortOrder])
 
+  const filteredFolders = React.useMemo(() => {
+    if (!folders) return []
+    let list = []
+    
+    if (folderId) {
+      // Browsing inside a folder -> show subfolders
+      list = folders.filter((f: any) => String(f.parent_id) === String(folderId))
+    } else if (selectedTab === 'todos' || selectedTab === 'carpetas') {
+      // Root view -> show only root folders
+      list = folders.filter((f: any) => !f.parent_id)
+    }
+
+    // Apply search query if present
+    if (query) {
+      list = list.filter((f: any) => f.name.toLowerCase().includes(query))
+    }
+
+    // Sort folders (folders usually sorted by name)
+    return [...list].sort((a, b) => a.name.localeCompare(b.name))
+  }, [folders, folderId, selectedTab, query])
+
   const normalizedSearchResults = React.useMemo(() => {
     if (!searchResults) return []
     return searchResults
@@ -186,10 +207,13 @@ export default function BoardPage() {
     { key: 'audio', label: 'Audio', icon: MusicalNoteIcon },
     { key: 'video', label: 'Video', icon: VideoCameraIcon }
   ]
-  const showFolders = selectedTab === 'carpetas'
-  const subtitleText = showFolders
-    ? `${folders?.length ?? 0} carpetas disponibles`
-    : `${filteredFiles.length} archivos en total`
+  const isBrowsingGlobal = !folderId
+  const showFolders = selectedTab === 'carpetas' || selectedTab === 'todos' || !!folderId
+  const showFiles = selectedTab !== 'carpetas'
+
+  const subtitleText = selectedTab === 'carpetas'
+    ? `${filteredFolders.length} carpetas`
+    : `${filteredFiles.length} archivos ${folderId ? 'en esta carpeta' : ''}`
   const openFolder = React.useCallback((folderId: string) => {
     const params = new URLSearchParams(search)
     params.set('folder', folderId)
@@ -545,51 +569,59 @@ export default function BoardPage() {
                   </div>
                 )}
               </div>
-            ) : showFolders ? (
-              <FolderGrid
-                folders={folders}
-                loading={foldersLoading}
-                error={foldersError}
-                onOpen={openFolder}
-                onDrop={handleDrop}
-                selectedFolderId={selectedFolderId}
-                onSelect={(id) => setSelectedFolderId(id)}
-                onRename={handleRenameFolder}
-                onDelete={handleDeleteFolder}
-                onShare={(id, name) => setSharingResource({ type: 'folder', id, name })}
-              />
             ) : (
-              <>
-                {isLoading && <div>Cargando…</div>}
-                {isError && <div>Error al cargar</div>}
-                {!isLoading && !isError && (
-                  folderId ? (
-                    normalizedFiles.length === 0 ? (
-                      <EmptyFolder onUpload={() => document.getElementById('file-input')?.click()} />
-                    ) : (
-                      viewMode === 'grid' ? (
-                        <FileListView files={filteredFiles} onShare={(id, name) => setSharingResource({ type: 'file', id, name })} />
-                      ) : (
-                        <ul className={styles.list}>
-                          {filteredFiles.map((file: any) => (
-                            <FileListItem key={file.id} file={file} />
-                          ))}
-                        </ul>
-                      )
-                    )
-                  ) : (
-                    viewMode === 'grid' ? (
-                      <FileListView files={filteredFiles} onShare={(id, name) => setSharingResource({ type: 'file', id, name })} />
-                    ) : (
-                      <ul className={styles.list}>
-                        {filteredFiles.map((file: any) => (
-                          <FileListItem key={file.id} file={file} />
-                        ))}
-                      </ul>
-                    )
-                  )
+              <div className="space-y-8 pb-20">
+                {/* 1. Folders Section */}
+                {showFolders && filteredFolders.length > 0 && (
+                  <div>
+                    {selectedTab === 'todos' && <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Carpetas</h3>}
+                    <FolderGrid
+                      folders={filteredFolders}
+                      loading={foldersLoading}
+                      error={foldersError}
+                      onOpen={openFolder}
+                      onDrop={handleDrop}
+                      selectedFolderId={selectedFolderId}
+                      onSelect={(id) => setSelectedFolderId(id)}
+                      onRename={handleRenameFolder}
+                      onDelete={handleDeleteFolder}
+                      onShare={(id, name) => setSharingResource({ type: 'folder', id, name })}
+                    />
+                  </div>
                 )}
-              </>
+
+                {/* 2. Files Section */}
+                {showFiles && (
+                  <div>
+                    {selectedTab === 'todos' && filteredFolders.length > 0 && (
+                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 mt-8">Archivos</h3>
+                    )}
+                    
+                    {isLoading && <div className="p-8 text-center text-slate-500">Cargando archivos...</div>}
+                    {isError && <div className="p-8 text-center text-red-500">Error al cargar archivos</div>}
+                    
+                    {!isLoading && !isError && (
+                      filteredFiles.length === 0 ? (
+                        selectedTab === 'todos' && filteredFolders.length > 0 ? (
+                          <div className="py-8 text-center text-slate-400 text-sm italic">No hay archivos sueltos en esta ubicación</div>
+                        ) : (
+                          <EmptyFolder onUpload={() => document.getElementById('file-input')?.click()} />
+                        )
+                      ) : (
+                        viewMode === 'grid' ? (
+                          <FileListView files={filteredFiles} onShare={(id, name) => setSharingResource({ type: 'file', id, name })} />
+                        ) : (
+                          <ul className={styles.list}>
+                            {filteredFiles.map((file: any) => (
+                              <FileListItem key={file.id} file={file} />
+                            ))}
+                          </ul>
+                        )
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
             )}
           </DynamicContentArea>
 

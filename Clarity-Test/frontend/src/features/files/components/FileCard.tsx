@@ -476,7 +476,7 @@ export default function FileCard({ id, name, type, size, isPublic, department, t
                   <><GlobeAltIcon className="w-4 h-4 mr-2" /> Hacer público</>
                 )}
               </button>
-              <button type="button" onClick={() => handleMenuAction(handleDelete)} disabled={del.isPending} style={{ color: '#ef4444' }}>
+              <button type="button" onClick={() => handleMenuAction(handleDelete)} disabled={del.isPending} className="danger">
                 <TrashIcon className="w-4 h-4 mr-2" /> {del.isPending ? 'Eliminando…' : 'Eliminar'}
               </button>
             </div>

@@ -126,6 +126,7 @@ export default function TaxonomyPage() {
                 <button 
                   onClick={() => handleDeleteDept(d.id, d.name)}
                   className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                  title={`Eliminar departamento ${d.name}`}
                 >
                   <TrashIcon className="w-5 h-5" />
                 </button>
@@ -167,6 +168,7 @@ export default function TaxonomyPage() {
                 <button 
                   onClick={() => handleDeleteTag(t.id, t.name)}
                   className="text-purple-300 hover:text-red-500 transition-colors"
+                  title={`Eliminar etiqueta ${t.name}`}
                 >
                   <TrashIcon className="w-4 h-4" />
                 </button>
