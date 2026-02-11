@@ -82,9 +82,10 @@ export function checkPermission(userId: number | null, resourceType: string, res
     db.get('SELECT role FROM users WHERE id = ?', [userId], (err: any, urow: any) => {
       if (!err && urow && urow.role === 'owner_admin') return resolve(true);
 
-      // if checking a file, owner also bypasses
-      if (resourceType === 'file' && resourceId != null) {
-        db.get('SELECT owner_id FROM files WHERE id = ?', [resourceId], (ferr: any, frow: any) => {
+      // if checking a file or folder, owner also bypasses
+      if ((resourceType === 'file' || resourceType === 'folder') && resourceId != null) {
+        const table = resourceType === 'file' ? 'files' : 'folders';
+        db.get(`SELECT owner_id FROM ${table} WHERE id = ?`, [resourceId], (ferr: any, frow: any) => {
           if (!ferr && frow && frow.owner_id === userId) return resolve(true);
           // otherwise check explicit permission
           db.get('SELECT 1 FROM permissions WHERE user_id = ? AND resource_type = ? AND (resource_id IS ? OR resource_id IS NULL) AND permission_type = ? LIMIT 1', [userId, resourceType, resourceId, permissionType], (perr: any, prow: any) => {

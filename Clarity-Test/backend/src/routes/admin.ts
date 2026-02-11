@@ -6,7 +6,12 @@ const router = express.Router();
 
 // List users (admin only)
 router.get('/users', requireRole('owner_admin'), (req, res) => {
-  db.all('SELECT id, email, role, created_at FROM users', [], (err, rows) => {
+  db.all(`
+    SELECT u.id, u.email, u.name, u.role, u.created_at, SUM(f.size) as storage_used 
+    FROM users u 
+    LEFT JOIN files f ON u.id = f.owner_id 
+    GROUP BY u.id
+  `, [], (err: any, rows: any) => {
     if (err) return res.status(500).json({ error: 'db error' });
     res.json(rows);
   });

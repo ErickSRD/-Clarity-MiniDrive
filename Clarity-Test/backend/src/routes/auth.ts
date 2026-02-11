@@ -95,4 +95,13 @@ router.patch('/password', authMiddleware, async (req, res) => {
   });
 });
 
+// List users for sharing
+router.get('/', authMiddleware, (req, res) => {
+  const query = req.query.q ? `%${req.query.q}%` : '%';
+  db.all('SELECT id, email, name FROM users WHERE email LIKE ? OR name LIKE ? LIMIT 20', [query, query], (err: any, rows: any) => {
+    if (err) return res.status(500).json({ error: 'db error' });
+    res.json(rows);
+  });
+});
+
 export default router;
