@@ -24,7 +24,27 @@ interface FileListItemProps {
 
 export default function FileListItem({ file }: FileListItemProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = React.useRef<HTMLDivElement>(null);
   const qc = useQueryClient();
+  
+  // Click outside to close menu
+  React.useEffect(() => {
+    if (!menuOpen) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [menuOpen]);
+
+  const handleMenuAction = (e: React.MouseEvent, action: () => void) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setMenuOpen(false);
+    action();
+  };
   
   const deleteMutation = useMutation({
     mutationFn: () => deleteFile(file.id),
@@ -49,12 +69,10 @@ export default function FileListItem({ file }: FileListItemProps) {
     if (confirmed) {
       deleteMutation.mutate();
     }
-    setMenuOpen(false);
   };
   
   const handleToggleVisibility = () => {
     visibilityMutation.mutate(!file.is_public);
-    setMenuOpen(false);
   };
 
   const handleClassify = async () => {
@@ -107,7 +125,6 @@ export default function FileListItem({ file }: FileListItemProps) {
         toastError('Error al actualizar')
       }
     }
-    setMenuOpen(false)
   }
   
   const handleDownload = async () => {
@@ -135,7 +152,6 @@ export default function FileListItem({ file }: FileListItemProps) {
     } catch (error) {
       toastError('Error al descargar el archivo');
     }
-    setMenuOpen(false);
   };
 
   const fetchChecksum = async () => {
@@ -243,77 +259,72 @@ export default function FileListItem({ file }: FileListItemProps) {
         </span>
       </div>
 
-      <div className={styles.menu}>
+      <div className={styles.menu} ref={menuRef}>
         <button
           className={`sq-btn secondary ${styles.menuButton}`}
           onClick={(e) => {
             e.stopPropagation();
+            e.preventDefault();
             setMenuOpen(!menuOpen);
           }}
         >
           ⋮
         </button>
         {menuOpen && (
-          <>
-            <div
-              className={styles.menuOverlay}
-              onClick={() => setMenuOpen(false)}
-            />
-            <ul className={styles.menuList}>
-              <li>
-                <button
-                  type="button"
-                  onClick={viewFile}
-                  className={styles.menuItem}
-                >
-                  <EyeIcon className="w-4 h-4 mr-2" /> Ver archivo
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={handleDownload}
-                  className={styles.menuItem}
-                >
-                  <ArrowDownTrayIcon className="w-4 h-4 mr-2" /> Descargar
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={handleClassify}
-                  className={styles.menuItem}
-                >
-                  <PencilSquareIcon className="w-4 h-4 mr-2" /> Categorías
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={handleToggleVisibility}
-                  disabled={visibilityMutation.isPending}
-                  className={styles.menuItem}
-                >
-                  {file.is_public ? (
-                    <><LockClosedIcon className="w-4 h-4 mr-2" /> Hacer privado</>
-                  ) : (
-                    <><GlobeAltIcon className="w-4 h-4 mr-2" /> Hacer público</>
-                  )}
-                </button>
-              </li>
-              <li className={styles.divider} />
-              <li>
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  disabled={deleteMutation.isPending}
-                  className={`${styles.menuItem} ${styles.menuItemDanger}`}
-                >
-                  <TrashIcon className="w-4 h-4 mr-2" /> Eliminar
-                </button>
-              </li>
-            </ul>
-          </>
+          <ul className={styles.menuList}>
+            <li>
+              <button
+                type="button"
+                onClick={(e) => handleMenuAction(e, viewFile)}
+                className={styles.menuItem}
+              >
+                <EyeIcon className="w-4 h-4 mr-2" /> Ver archivo
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                onClick={(e) => handleMenuAction(e, handleDownload)}
+                className={styles.menuItem}
+              >
+                <ArrowDownTrayIcon className="w-4 h-4 mr-2" /> Descargar
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                onClick={(e) => handleMenuAction(e, handleClassify)}
+                className={styles.menuItem}
+              >
+                <PencilSquareIcon className="w-4 h-4 mr-2" /> Categorías
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                onClick={(e) => handleMenuAction(e, handleToggleVisibility)}
+                disabled={visibilityMutation.isPending}
+                className={styles.menuItem}
+              >
+                {file.is_public ? (
+                  <><LockClosedIcon className="w-4 h-4 mr-2" /> Hacer privado</>
+                ) : (
+                  <><GlobeAltIcon className="w-4 h-4 mr-2" /> Hacer público</>
+                )}
+              </button>
+            </li>
+            <li className={styles.divider} />
+            <li>
+              <button
+                type="button"
+                onClick={(e) => handleMenuAction(e, handleDelete)}
+                disabled={deleteMutation.isPending}
+                className={`${styles.menuItem} ${styles.menuItemDanger}`}
+              >
+                <TrashIcon className="w-4 h-4 mr-2" /> Eliminar
+              </button>
+            </li>
+          </ul>
         )}
       </div>
     </li>

@@ -375,7 +375,9 @@ export default function FileCard({ id, name, type, size, isPublic, department, t
     }
   }, [id, isImage])
 
-  const handleMenuAction = (action: () => void) => {
+  const handleMenuAction = (e: React.MouseEvent, action: () => void) => {
+    e.stopPropagation()
+    e.preventDefault()
     setMenuOpen(false)
     action()
   }
@@ -449,35 +451,35 @@ export default function FileCard({ id, name, type, size, isPublic, department, t
           </button>
           {menuOpen && (
             <div className="options-menu">
-              <button type="button" onClick={() => handleMenuAction(viewFile)}>
-                <EyeIcon className="w-4 h-4 mr-2" /> Ver archivo
+              <button type="button" onClick={(e) => handleMenuAction(e, viewFile)}>
+                <EyeIcon className="w-4 h-4 mr-2 text-slate-500" /> Ver archivo
               </button>
               {onShare && (
-                <button type="button" onClick={() => handleMenuAction(() => onShare(id, name))}>
-                  <UserPlusIcon className="w-4 h-4 mr-2" /> Compartir
+                <button type="button" onClick={(e) => handleMenuAction(e, () => onShare(id, name))}>
+                  <UserPlusIcon className="w-4 h-4 mr-2 text-slate-500" /> Compartir
                 </button>
               )}
-              <button type="button" onClick={() => handleMenuAction(handleDownload)}>
-                <ArrowDownTrayIcon className="w-4 h-4 mr-2" /> Descargar
+              <button type="button" onClick={(e) => handleMenuAction(e, handleDownload)}>
+                <ArrowDownTrayIcon className="w-4 h-4 mr-2 text-slate-500" /> Descargar
               </button>
-              <button type="button" onClick={() => handleMenuAction(handleClassify)}>
-                <PencilSquareIcon className="w-4 h-4 mr-2" /> Categorías
+              <button type="button" onClick={(e) => handleMenuAction(e, handleClassify)}>
+                <PencilSquareIcon className="w-4 h-4 mr-2 text-slate-500" /> Categorías
               </button>
-              <button type="button" onClick={() => handleMenuAction(showDetails)}>
-                <InformationCircleIcon className="w-4 h-4 mr-2" /> Ver detalles
+              <button type="button" onClick={(e) => handleMenuAction(e, showDetails)}>
+                <InformationCircleIcon className="w-4 h-4 mr-2 text-slate-500" /> Ver detalles
               </button>
-              <button type="button" onClick={() => handleMenuAction(handleMove)} disabled={moving}>
-                <ArrowPathRoundedSquareIcon className="w-4 h-4 mr-2" /> {moving ? 'Moviendo…' : 'Mover'}
+              <button type="button" onClick={(e) => handleMenuAction(e, handleMove)} disabled={moving}>
+                <ArrowPathRoundedSquareIcon className="w-4 h-4 mr-2 text-slate-500" /> {moving ? 'Moviendo…' : 'Mover'}
               </button>
-              <button type="button" onClick={() => handleMenuAction(handleToggleVisibility)} disabled={visibility.isPending}>
+              <button type="button" onClick={(e) => handleMenuAction(e, handleToggleVisibility)} disabled={visibility.isPending}>
                 {isPublic ? (
-                  <><LockClosedIcon className="w-4 h-4 mr-2" /> Hacer privado</>
+                  <><LockClosedIcon className="w-4 h-4 mr-2 text-slate-500" /> Hacer privado</>
                 ) : (
-                  <><GlobeAltIcon className="w-4 h-4 mr-2" /> Hacer público</>
+                  <><GlobeAltIcon className="w-4 h-4 mr-2 text-slate-500" /> Hacer público</>
                 )}
               </button>
-              <button type="button" onClick={() => handleMenuAction(handleDelete)} disabled={del.isPending} className="danger">
-                <TrashIcon className="w-4 h-4 mr-2" /> {del.isPending ? 'Eliminando…' : 'Eliminar'}
+              <button type="button" onClick={(e) => handleMenuAction(e, handleDelete)} disabled={del.isPending} className="danger">
+                <TrashIcon className="w-4 h-4 mr-2 text-red-500" /> {del.isPending ? 'Eliminando…' : 'Eliminar'}
               </button>
             </div>
           )}

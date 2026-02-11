@@ -40,6 +40,7 @@ function FolderNode({
 }) {
   const [expanded, setExpanded] = React.useState(false)
   const [menuOpen, setMenuOpen] = React.useState(false)
+  const menuRef = React.useRef<HTMLDivElement>(null)
   const children = allFolders.filter(f => Number(f.parent_id) === Number(folder.id))
   const hasChildren = children.length > 0
   const isActive = String(folder.id) === String(currentFolderId)
@@ -57,6 +58,25 @@ function FolderNode({
       setExpanded(true)
     }
   }, [currentFolderId, folder.id, allFolders])
+
+  // Click outside to close menu
+  React.useEffect(() => {
+    if (!menuOpen) return
+    const handleOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleOutside)
+    return () => document.removeEventListener('mousedown', handleOutside)
+  }, [menuOpen])
+
+  const handleMenuAction = (e: React.MouseEvent, action: () => void) => {
+    e.stopPropagation()
+    e.preventDefault()
+    setMenuOpen(false)
+    action()
+  }
 
   return (
     <div className="folder-tree-item">
@@ -90,13 +110,14 @@ function FolderNode({
         </div>
         
         <div className="tree-controls">
-          <div className="options-wrapper">
+          <div className="options-wrapper" ref={menuRef}>
             <button
               type="button"
               className={`tree-btn ${isActive ? 'active-btn' : ''}`}
               title="Más opciones"
               onClick={(e) => {
                 e.stopPropagation()
+                e.preventDefault()
                 setMenuOpen(!menuOpen)
               }}
             >
@@ -104,24 +125,18 @@ function FolderNode({
             </button>
             {menuOpen && (
               <div className="options-menu tree-menu">
-                <button type="button" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onCreateSub(folder.id); }}>
-                  <PlusIcon className="w-4 h-4 mr-2" /> Nueva sub-carpeta
+                <button type="button" onClick={(e) => handleMenuAction(e, () => onCreateSub(folder.id))}>
+                  <PlusIcon className="w-4 h-4 mr-2 text-slate-500" /> Nueva sub-carpeta
                 </button>
-                <button type="button" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onRename(folder.id, folder.name, folder.color); }}>
-                  <PencilSquareIcon className="w-4 h-4 mr-2" /> Renombrar
+                <button type="button" onClick={(e) => handleMenuAction(e, () => onRename(folder.id, folder.name, folder.color))}>
+                  <PencilSquareIcon className="w-4 h-4 mr-2 text-slate-500" /> Renombrar
                 </button>
-                <button type="button" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDelete(folder.id); }}>
-                  <TrashIcon className="w-4 h-4 mr-2" /> Eliminar
+                <button type="button" onClick={(e) => handleMenuAction(e, () => onDelete(folder.id))}>
+                  <TrashIcon className="w-4 h-4 mr-2 text-red-500" /> Eliminar
                 </button>
               </div>
             )}
           </div>
-          {menuOpen && (
-            <div 
-              className="fixed inset-0 z-[9999]" 
-              onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }} 
-            />
-          )}
         </div>
       </div>
       

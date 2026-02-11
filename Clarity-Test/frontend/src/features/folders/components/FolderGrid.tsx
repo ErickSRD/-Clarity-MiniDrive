@@ -33,6 +33,7 @@ function FolderCardItem({
 }: any) {
   const bodyRef = useRef<HTMLDivElement>(null)
   const iconRef = useRef<any>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (bodyRef.current) {
@@ -43,6 +44,18 @@ function FolderCardItem({
       iconRef.current.style.setProperty('--folder-icon-glow', `${folder.color || '#21C07A'}2e`)
     }
   }, [folder.color])
+
+  // Click outside to close menu
+  useEffect(() => {
+    if (openMenuId !== folder.id) return
+    const handleOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenuId(null)
+      }
+    }
+    document.addEventListener('mousedown', handleOutside)
+    return () => document.removeEventListener('mousedown', handleOutside)
+  }, [openMenuId, folder.id, setOpenMenuId])
 
   return (
     <div
@@ -62,13 +75,14 @@ function FolderCardItem({
             <p className="folder-card-title truncate" title={folder.name}>{folder.name}</p>
           </div>
 
-          <div className="options-wrapper">
+          <div className="options-wrapper" ref={menuRef}>
             <button
               type="button"
               className="options-trigger-pill"
               title="Más opciones"
               onClick={(e) => {
                 e.stopPropagation()
+                e.preventDefault()
                 setOpenMenuId(openMenuId === folder.id ? null : folder.id)
               }}
             >
@@ -76,22 +90,22 @@ function FolderCardItem({
             </button>
             {openMenuId === folder.id && (
               <div className="options-menu options-menu-bottom-right">
-                <button type="button" onClick={() => handleMenuAction(folder.id, () => onOpen(folder.id))}>
-                  <FolderIcon className="w-4 h-4 mr-2" /> Abrir carpeta
+                <button type="button" onClick={(e) => handleMenuAction(e, folder.id, () => onOpen(folder.id))}>
+                  <FolderIcon className="w-4 h-4 mr-2 text-slate-500" /> Abrir carpeta
                 </button>
                 {onShare && (
-                  <button type="button" onClick={() => handleMenuAction(folder.id, () => onShare(folder.id, folder.name))}>
-                    <UserPlusIcon className="w-4 h-4 mr-2" /> Compartir
+                  <button type="button" onClick={(e) => handleMenuAction(e, folder.id, () => onShare(folder.id, folder.name))}>
+                    <UserPlusIcon className="w-4 h-4 mr-2 text-slate-500" /> Compartir
                   </button>
                 )}
                 {onRename && (
-                  <button type="button" onClick={() => handleMenuAction(folder.id, () => onRename(folder.id, folder.name, folder.color))}>
-                    <PencilIcon className="w-4 h-4 mr-2" /> Renombrar
+                  <button type="button" onClick={(e) => handleMenuAction(e, folder.id, () => onRename(folder.id, folder.name, folder.color))}>
+                    <PencilIcon className="w-4 h-4 mr-2 text-slate-500" /> Renombrar
                   </button>
                 )}
                 {onDelete && (
-                  <button type="button" onClick={() => handleMenuAction(folder.id, () => onDelete(folder.id))}>
-                    <TrashIcon className="w-4 h-4 mr-2" /> Eliminar
+                  <button type="button" onClick={(e) => handleMenuAction(e, folder.id, () => onDelete(folder.id))}>
+                    <TrashIcon className="w-4 h-4 mr-2 text-red-500" /> Eliminar
                   </button>
                 )}
               </div>
@@ -122,7 +136,9 @@ export default function FolderGrid({
   if (error) return <div>No se pudieron cargar las carpetas</div>
   if (!folders || folders.length === 0) return <div>No hay carpetas aún</div>
 
-  const handleMenuAction = (id: string, action: () => void) => {
+  const handleMenuAction = (e: React.MouseEvent, id: string, action: () => void) => {
+    e.stopPropagation()
+    e.preventDefault()
     setOpenMenuId(null)
     action()
   }
@@ -168,14 +184,6 @@ export default function FolderGrid({
           }}
         />
       ))}
-      
-      {/* Click outside to close menu */}
-      {openMenuId && (
-        <div 
-          className="overlay-fixed"
-          onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }}
-        />
-      )}
     </div>
   )
 }
