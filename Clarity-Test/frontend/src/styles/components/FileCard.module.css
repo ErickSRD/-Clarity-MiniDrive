@@ -9,6 +9,12 @@
   gap: 8px;
   transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
   will-change: transform, box-shadow;
+  position: relative;
+  z-index: 1;
+}
+
+.cardActive {
+  z-index: 1000 !important;
 }
 
 .card:focus-within {

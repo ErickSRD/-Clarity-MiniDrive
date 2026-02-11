@@ -14,12 +14,13 @@ import {
   EllipsisVerticalIcon,
   ArrowLeftIcon,
   FolderPlusIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  MagnifyingGlassIcon
 } from '@heroicons/react/24/outline'
 import FileListView from '../features/files/components/FileList'
 import EmptyFolder from '../features/files/components/EmptyFolder'
 import { moveFile } from '../features/files/api'
-import { useFiles } from '../features/files/hooks/useFiles'
+import { useFiles, useSearch } from '../features/files/hooks/useFiles'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import FileListItem from '../components/FileListItem'
@@ -28,6 +29,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useFolders } from '../features/folders/hooks/useFolders'
 import { toastError, toastSuccess, MySwal, folderCustomizer } from '../utils/swal'
 import FolderGrid from '../features/folders/components/FolderGrid'
+import AdvancedSearch from '../features/files/components/AdvancedSearch'
 import ShareModal from '../features/permissions/components/ShareModal'
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
@@ -45,7 +47,16 @@ function DynamicContentArea({ children }: { children: React.ReactNode }) {
 
 export default function BoardPage() {
   const [search, setSearch] = useSearchParams()
-  const [selectedTab, setSelectedTab] = React.useState<'todos' | 'carpetas' | 'archivos' | 'imagenes' | 'pdf' | 'documentos' | 'comprimidos' | 'audio' | 'video'>('todos')
+  const initialTab = (search.get('tab') as any) || 'todos'
+  const [selectedTab, setSelectedTab] = React.useState<'todos' | 'carpetas' | 'archivos' | 'imagenes' | 'pdf' | 'documentos' | 'comprimidos' | 'audio' | 'video' | 'busqueda'>(initialTab)
+
+  React.useEffect(() => {
+    const tabUrl = search.get('tab')
+    if (tabUrl && tabUrl !== selectedTab) {
+      setSelectedTab(tabUrl as any)
+    }
+  }, [search])
+
   const folderId = search.get('folder') || undefined
   const query = (search.get('q') || '').trim().toLowerCase()
   const { data, isLoading, isError, upload } = useFiles(folderId)
@@ -63,6 +74,10 @@ export default function BoardPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'size'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  
+  const [searchParamsState, setSearchParamsState] = useState<any>({ q: '' })
+  const { data: searchResults, isLoading: searchLoading } = useSearch(searchParamsState, selectedTab === 'busqueda')
+
   const qc = useQueryClient()
   const moveMutation = useMutation({
     mutationFn: ({ fileId, folderId }: { fileId: string; folderId: string }) => moveFile(fileId, folderId),
@@ -153,9 +168,16 @@ export default function BoardPage() {
       return sortOrder === 'asc' ? comparison : -comparison;
     });
   }, [normalizedFiles, normalizedAllFiles, selectedTab, folderId, query, sortBy, sortOrder])
-  const tabs: { key: 'todos' | 'carpetas' | 'archivos' | 'imagenes' | 'pdf' | 'documentos' | 'comprimidos' | 'audio' | 'video'; label: string; icon: any }[] = [
+
+  const normalizedSearchResults = React.useMemo(() => {
+    if (!searchResults) return []
+    return searchResults
+  }, [searchResults])
+
+  const tabs: { key: 'todos' | 'carpetas' | 'archivos' | 'imagenes' | 'pdf' | 'documentos' | 'comprimidos' | 'audio' | 'video' | 'busqueda'; label: string; icon: any }[] = [
     { key: 'todos', label: 'Todos', icon: Squares2X2Icon },
     { key: 'carpetas', label: 'Carpetas', icon: FolderIcon },
+    { key: 'busqueda', label: 'Búsqueda', icon: MagnifyingGlassIcon },
     { key: 'archivos', label: 'Archivos', icon: DocumentIcon },
     { key: 'imagenes', label: 'Imágenes', icon: PhotoIcon },
     { key: 'pdf', label: 'PDF', icon: DocumentTextIcon },
@@ -282,11 +304,12 @@ export default function BoardPage() {
   const handleDeleteFolder = async (id: string) => {
     const result = await MySwal.fire({
       title: '¿Eliminar carpeta?',
-      text: 'Esta acción no se puede deshacer si la carpeta está vacía.',
+      text: 'Se eliminará la carpeta y todo su contenido (archivos y subcarpetas). Esta acción no se puede deshacer.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
+      confirmButtonText: 'Sí, eliminar todo',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#ef4444'
     })
 
     if (result.isConfirmed) {
@@ -446,6 +469,18 @@ export default function BoardPage() {
         </div>
       </div>
 
+          {selectedTab === 'busqueda' && (
+            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-4 relative z-20">
+              <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+                Panel de Búsqueda Avanzada
+              </h3>
+              <AdvancedSearch 
+                onSearch={(params) => setSearchParamsState(params)} 
+                onClear={() => setSearchParamsState({ q: '' })} 
+              />
+            </div>
+          )}
+
           <div className={styles.viewToggle}>
             <div className="flex items-center gap-3 mr-4 border-r pr-4 border-slate-200">
               <span className="text-sm font-medium text-slate-500">Ordenar:</span>
@@ -488,7 +523,29 @@ export default function BoardPage() {
           </div>
 
           <DynamicContentArea>
-            {showFolders ? (
+            {selectedTab === 'busqueda' ? (
+              <div className="pb-20">
+                {searchLoading ? (
+                  <div className="flex items-center justify-center p-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+                  </div>
+                ) : normalizedSearchResults.length > 0 ? (
+                  viewMode === 'grid' ? (
+                    <FileListView files={normalizedSearchResults} onShare={(id, name) => setSharingResource({ type: 'file', id, name })} />
+                  ) : (
+                    <ul className={styles.list}>
+                      {normalizedSearchResults.map((file: any) => (
+                        <FileListItem key={file.id} file={file} />
+                      ))}
+                    </ul>
+                  )
+                ) : (
+                  <div className="text-center p-12 text-slate-400">
+                    No se encontraron resultados para los filtros aplicados.
+                  </div>
+                )}
+              </div>
+            ) : showFolders ? (
               <FolderGrid
                 folders={folders}
                 loading={foldersLoading}

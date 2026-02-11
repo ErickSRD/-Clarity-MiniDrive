@@ -46,7 +46,14 @@
 .tabs {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  max-width: 100%;
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+
+.tabs::-webkit-scrollbar {
+  display: none; /* Hide scrollbar Chrome/Safari */
 }
 
 .viewToggle {
@@ -100,6 +107,8 @@
   border: 1px solid #e6edf5;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  min-height: 400px;
+  overflow: visible;
 }
 
 .list {

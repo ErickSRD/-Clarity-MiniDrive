@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { listFiles, uploadFiles } from '../api';
+import { listFiles, uploadFiles, advancedSearch } from '../api';
 
 export const useFiles = (folderId?: string) => {
   const qc = useQueryClient();
@@ -9,4 +9,13 @@ export const useFiles = (folderId?: string) => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['files'] })
   });
   return { ...q, upload };
+}
+
+export const useSearch = (params: any, enabled = false) => {
+  return useQuery({
+    queryKey: ['files', 'search', params],
+    queryFn: () => advancedSearch(params),
+    enabled: enabled,
+    staleTime: 0
+  });
 }

@@ -12,6 +12,13 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
 
+  // Limpiar cualquier rastro de sesión previa al entrar al login
+  React.useEffect(() => {
+    try {
+      localStorage.clear();
+    } catch (e) { /* ignore */ }
+  }, []);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)

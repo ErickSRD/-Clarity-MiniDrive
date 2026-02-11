@@ -31,6 +31,8 @@ CREATE TABLE IF NOT EXISTS files (
   checksum TEXT,
   owner_id INTEGER,
   is_public INTEGER DEFAULT 0,
+  department TEXT,
+  tags TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(owner_id) REFERENCES users(id)
 );
@@ -51,4 +53,19 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   user_id INTEGER,
   action TEXT NOT NULL,
   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Departments
+CREATE TABLE IF NOT EXISTS departments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT UNIQUE NOT NULL,
+  description TEXT,
+  color TEXT
+);
+
+-- Global Tags
+CREATE TABLE IF NOT EXISTS global_tags (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT UNIQUE NOT NULL,
+  color TEXT
 );

@@ -1,6 +1,18 @@
 import React from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { FolderIcon, PencilSquareIcon, TrashIcon, ShieldCheckIcon, FolderPlusIcon, ChevronRightIcon, ChevronDownIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { 
+  FolderIcon, 
+  PencilSquareIcon, 
+  TrashIcon, 
+  ShieldCheckIcon, 
+  FolderPlusIcon, 
+  ChevronRightIcon, 
+  ChevronDownIcon, 
+  PlusIcon, 
+  MagnifyingGlassIcon,
+  ChartBarIcon,
+  TagIcon
+} from '@heroicons/react/24/outline'
 import { useFolders } from '../features/folders/hooks/useFolders'
 import { useFiles } from '../features/files/hooks/useFiles'
 import { renameFolder, deleteFolder, createFolder } from '../features/folders/api'
@@ -27,6 +39,7 @@ function FolderNode({
   currentFolderId?: string
 }) {
   const [expanded, setExpanded] = React.useState(false)
+  const [menuOpen, setMenuOpen] = React.useState(false)
   const children = allFolders.filter(f => Number(f.parent_id) === Number(folder.id))
   const hasChildren = children.length > 0
   const isActive = String(folder.id) === String(currentFolderId)
@@ -71,36 +84,44 @@ function FolderNode({
             className={`tree-icon flex-shrink-0 ${isActive ? 'active-icon' : ''}`} 
             style={!isActive && folder.color ? { color: folder.color } : {}}
           />
-          <span className={`flex-1 truncate ${isActive ? 'font-bold' : ''}`} title={folder.name}>
+          <span className={`flex-1 ${isActive ? 'font-bold' : ''}`} title={folder.name}>
             {folder.name}
           </span>
         </div>
         
         <div className="tree-controls">
-          <button 
-            type="button"
-            title="Nueva sub-carpeta"
-            onClick={(e) => { e.stopPropagation(); onCreateSub(folder.id); }}
-            className={`tree-btn ${isActive ? 'active-btn' : ''}`}
-          >
-            <PlusIcon className="w-3.5 h-3.5" />
-          </button>
-          <button 
-            type="button"
-            title="Renombrar carpeta"
-            onClick={(e) => { e.stopPropagation(); onRename(folder.id, folder.name, folder.color); }}
-            className={`tree-btn ${isActive ? 'active-btn' : ''}`}
-          >
-            <PencilSquareIcon className="w-3.5 h-3.5" />
-          </button>
-          <button 
-            type="button"
-            title="Eliminar carpeta"
-            onClick={(e) => { e.stopPropagation(); onDelete(folder.id); }}
-            className={`tree-btn danger ${isActive ? 'active-btn-danger' : ''}`}
-          >
-            <TrashIcon className="w-3.5 h-3.5" />
-          </button>
+          <div className="options-wrapper">
+            <button
+              type="button"
+              className={`tree-btn ${isActive ? 'active-btn' : ''}`}
+              title="Más opciones"
+              onClick={(e) => {
+                e.stopPropagation()
+                setMenuOpen(!menuOpen)
+              }}
+            >
+              ⋮
+            </button>
+            {menuOpen && (
+              <div className="options-menu tree-menu">
+                <button type="button" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onCreateSub(folder.id); }}>
+                  <PlusIcon className="w-4 h-4 mr-2" /> Nueva sub-carpeta
+                </button>
+                <button type="button" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onRename(folder.id, folder.name, folder.color); }}>
+                  <PencilSquareIcon className="w-4 h-4 mr-2" /> Renombrar
+                </button>
+                <button type="button" onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDelete(folder.id); }}>
+                  <TrashIcon className="w-4 h-4 mr-2" /> Eliminar
+                </button>
+              </div>
+            )}
+          </div>
+          {menuOpen && (
+            <div 
+              className="fixed inset-0 z-[9999]" 
+              onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }} 
+            />
+          )}
         </div>
       </div>
       
@@ -186,7 +207,16 @@ export default function Sidebar({ open }: { open?: boolean }) {
       <nav className="sidebar-inner">
         <ul>
           <li onClick={() => openFolder(undefined)} className="side-item active"><FolderIcon className="icon-svg"/> Mis archivos</li>
-          {user?.role === 'owner_admin' && (
+          <li onClick={() => navigate('/board?tab=busqueda')} className="side-item">
+            <MagnifyingGlassIcon className="icon-svg" /> Búsqueda
+          </li>
+          <li onClick={() => navigate('/reports')} className="side-item">
+            <ChartBarIcon className="icon-svg" /> Reportes
+          </li>
+          <li onClick={() => navigate('/taxonomy')} className="side-item">
+            <TagIcon className="icon-svg" /> Etiquetas y Deptos.
+          </li>
+          {(user?.role === 'admin' || user?.role === 'owner_admin' || (user as any)?.role === 'admin') && (
             <li onClick={() => navigate('/admin')} className="side-item">
               <ShieldCheckIcon className="icon-svg" /> Administrador
             </li>
@@ -229,7 +259,10 @@ export default function Sidebar({ open }: { open?: boolean }) {
                   }
                 }}
                 onDelete={async (id) => {
-                  const ok = await confirm('Eliminar', '¿Eliminar carpeta?')
+                  const ok = await confirm(
+                    '¿Eliminar carpeta?', 
+                    'Se eliminará la carpeta y todo su contenido (archivos y subcarpetas).'
+                  )
                   if (ok) deleteMut.mutateAsync(id)
                 }}
               />

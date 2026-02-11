@@ -27,9 +27,16 @@ export default function FolderGrid({
   onShare
 }: FolderGridProps) {
   const [dropTarget, setDropTarget] = React.useState<string | null>(null)
+  const [openMenuId, setOpenMenuId] = React.useState<string | null>(null)
+
   if (loading) return <div>Cargando carpetas…</div>
   if (error) return <div>No se pudieron cargar las carpetas</div>
   if (!folders || folders.length === 0) return <div>No hay carpetas aún</div>
+
+  const handleMenuAction = (id: string, action: () => void) => {
+    setOpenMenuId(null)
+    action()
+  }
 
   return (
     <div className="folder-grid">
@@ -37,6 +44,7 @@ export default function FolderGrid({
         <div
           className={`folder-card group${dropTarget === folder.id ? ' drop-target' : ''}${selectedFolderId === folder.id ? ' selected' : ''}`}
           key={folder.id}
+          style={{ zIndex: openMenuId === folder.id ? 1000 : 1 }}
           onDragOver={(e) => {
             e.preventDefault()
             setDropTarget(folder.id)
@@ -63,57 +71,65 @@ export default function FolderGrid({
           }}
         >
           <div className="folder-shape">
-            <div className="folder-body" style={folder.color ? { borderLeft: `4px solid ${folder.color}` } : {}}>
+            <div className="folder-body" style={{ ...(folder.color ? { borderLeft: `4px solid ${folder.color}` } : {}), overflow: 'visible' }}>
               <div className="folder-body-left">
                 <FolderIcon 
                   className="folder-icon" 
                   style={folder.color ? { background: folder.color, boxShadow: `0 8px 20px ${folder.color}2e` } : {}}
                 />
               </div>
-              <div className="folder-body-right relative pr-8">
-                <p className="folder-card-title truncate">{folder.name}</p>
-                
-                {/* Actions */}
-                <div className="absolute top-0 right-0 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {onShare && (
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onShare(folder.id, folder.name);
-                      }}
-                      className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-indigo-600"
-                    >
-                      <UserPlusIcon className="w-4 h-4" />
+              <div className="folder-body-right">
+                <p className="folder-card-title truncate" title={folder.name}>{folder.name}</p>
+              </div>
+
+              {/* Actions Menu */}
+              <div className="options-wrapper">
+                <button
+                  type="button"
+                  className="options-trigger"
+                  style={{ padding: '2px 8px', fontSize: '18px', borderRadius: '999px', background: '#fff', border: '1px solid #eef2f7' }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setOpenMenuId(openMenuId === folder.id ? null : folder.id)
+                  }}
+                >
+                  ⋮
+                </button>
+                {openMenuId === folder.id && (
+                  <div className="options-menu" style={{ top: '100%', right: '0' }}>
+                    <button type="button" onClick={() => handleMenuAction(folder.id, () => onOpen(folder.id))}>
+                      <FolderIcon className="w-4 h-4 mr-2" /> Abrir carpeta
                     </button>
-                  )}
-                  {onRename && (
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onRename(folder.id, folder.name, folder.color);
-                      }}
-                      className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-indigo-600"
-                    >
-                      <PencilIcon className="w-4 h-4" />
-                    </button>
-                  )}
-                  {onDelete && (
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(folder.id);
-                      }}
-                      className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-red-600"
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
+                    {onShare && (
+                      <button type="button" onClick={() => handleMenuAction(folder.id, () => onShare(folder.id, folder.name))}>
+                        <UserPlusIcon className="w-4 h-4 mr-2" /> Compartir
+                      </button>
+                    )}
+                    {onRename && (
+                      <button type="button" onClick={() => handleMenuAction(folder.id, () => onRename(folder.id, folder.name, folder.color))}>
+                        <PencilIcon className="w-4 h-4 mr-2" /> Renombrar
+                      </button>
+                    )}
+                    {onDelete && (
+                      <button type="button" onClick={() => handleMenuAction(folder.id, () => onDelete(folder.id))}>
+                        <TrashIcon className="w-4 h-4 mr-2" /> Eliminar
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       ))}
+      
+      {/* Click outside to close menu */}
+      {openMenuId && (
+        <div 
+          style={{ position: 'fixed', inset: 0, zIndex: 9999 }} 
+          onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }}
+        />
+      )}
     </div>
   )
 }

@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
-import { LockClosedIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
+import { 
+  LockClosedIcon, 
+  GlobeAltIcon, 
+  PencilSquareIcon,
+  EyeIcon,
+  ArrowDownTrayIcon,
+  TrashIcon,
+  DocumentIcon
+} from '@heroicons/react/24/outline';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteFile, toggleFileVisibility } from '../features/files/api';
+import { deleteFile, toggleFileVisibility, updateFileMetadata } from '../features/files/api';
+import api from '../services/api';
 import { toastError, toastSuccess, confirm } from '../utils/swal';
 import MySwal from '../utils/swal';
 import styles from '../styles/components/FileListItem.module.css';
@@ -47,6 +56,59 @@ export default function FileListItem({ file }: FileListItemProps) {
     visibilityMutation.mutate(!file.is_public);
     setMenuOpen(false);
   };
+
+  const handleClassify = async () => {
+    // Fetch available taxonomies
+    const [deptsRes, tagsRes] = await Promise.allSettled([
+      api.get('/api/taxonomy/departments'),
+      api.get('/api/taxonomy/tags')
+    ]);
+
+    const depts = deptsRes.status === 'fulfilled' ? deptsRes.value.data : [];
+    const availableTags = tagsRes.status === 'fulfilled' ? tagsRes.value.data : [];
+
+    const deptsOptions = depts.map((d: any) => `<option value="${d.name}" ${file.department === d.name ? 'selected' : ''}>${d.name}</option>`).join('');
+    const tagsHtml = availableTags.map((t: any) => `<option value="${t.name}">`).join('');
+
+    const { value: formValues } = await MySwal.fire({
+      title: 'Clasificar archivo',
+      html: `
+        <div style="text-align: left;">
+          <label class="swal2-label">Departamento:</label>
+          <select id="swal-dept" class="swal2-input" style="display: flex; width: 100%; box-sizing: border-box;">
+            <option value="">-- Sin departamento --</option>
+            ${deptsOptions}
+          </select>
+          
+          <label class="swal2-label" style="margin-top: 15px; display: block;">Etiquetas:</label>
+          <input id="swal-tags" class="swal2-input" value="${file.tags || ''}" list="tags-list" placeholder="Selecciona o escribe etiquetas...">
+          <datalist id="tags-list">${tagsHtml}</datalist>
+          <p style="font-size: 11px; color: #64748b; margin-top: 4px;">Selecciona etiquetas de la lista global (separadas por coma).</p>
+        </div>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Actualizar',
+      preConfirm: () => {
+        return {
+          name: file.name, // Keep existing name
+          department: (document.getElementById('swal-dept') as HTMLSelectElement).value,
+          tags: (document.getElementById('swal-tags') as HTMLInputElement).value
+        }
+      }
+    })
+
+    if (formValues) {
+      try {
+        await updateFileMetadata(file.id, formValues)
+        qc.invalidateQueries({ queryKey: ['files'] })
+        toastSuccess('Información actualizada')
+      } catch (err) {
+        toastError('Error al actualizar')
+      }
+    }
+    setMenuOpen(false)
+  }
   
   const handleDownload = async () => {
     try {
@@ -160,7 +222,7 @@ export default function FileListItem({ file }: FileListItemProps) {
   
   return (
     <li
-      className={styles.item}
+      className={`${styles.item} ${menuOpen ? styles.itemActive : ''}`}
       onDoubleClick={viewFile}
     >
       <div className={styles.left}>
@@ -204,7 +266,7 @@ export default function FileListItem({ file }: FileListItemProps) {
                   onClick={viewFile}
                   className={styles.menuItem}
                 >
-                  👁️ Ver archivo
+                  <EyeIcon className="w-4 h-4 mr-2" /> Ver archivo
                 </button>
               </li>
               <li>
@@ -213,7 +275,16 @@ export default function FileListItem({ file }: FileListItemProps) {
                   onClick={handleDownload}
                   className={styles.menuItem}
                 >
-                  📥 Descargar
+                  <ArrowDownTrayIcon className="w-4 h-4 mr-2" /> Descargar
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={handleClassify}
+                  className={styles.menuItem}
+                >
+                  <PencilSquareIcon className="w-4 h-4 mr-2" /> Categorías
                 </button>
               </li>
               <li>
@@ -223,7 +294,11 @@ export default function FileListItem({ file }: FileListItemProps) {
                   disabled={visibilityMutation.isPending}
                   className={styles.menuItem}
                 >
-                  {file.is_public ? '🔒 Hacer privado' : '🌐 Hacer público'}
+                  {file.is_public ? (
+                    <><LockClosedIcon className="w-4 h-4 mr-2" /> Hacer privado</>
+                  ) : (
+                    <><GlobeAltIcon className="w-4 h-4 mr-2" /> Hacer público</>
+                  )}
                 </button>
               </li>
               <li className={styles.divider} />
@@ -234,7 +309,7 @@ export default function FileListItem({ file }: FileListItemProps) {
                   disabled={deleteMutation.isPending}
                   className={`${styles.menuItem} ${styles.menuItemDanger}`}
                 >
-                  🗑️ Eliminar
+                  <TrashIcon className="w-4 h-4 mr-2" /> Eliminar
                 </button>
               </li>
             </ul>

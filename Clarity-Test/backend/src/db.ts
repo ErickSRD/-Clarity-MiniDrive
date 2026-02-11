@@ -15,7 +15,8 @@ const schemaPath = path.resolve(__dirname, '..', 'db', 'schema.sql');
 const schema = fs.existsSync(schemaPath) ? fs.readFileSync(schemaPath, 'utf8') : '';
 
 sqlite3.verbose();
-const db = new sqlite3.Database(dbFile);
+export const db = new sqlite3.Database(dbFile);
+export default db;
 
 if (schema) {
   db.exec(schema, (err) => {
@@ -39,6 +40,18 @@ db.serialize(() => {
         if (cerr) console.error('Failed to add checksum column:', cerr);
       });
     }
+    const hasDept = cols && cols.some((c: any) => c.name === 'department');
+    if (!hasDept) {
+      db.run('ALTER TABLE files ADD COLUMN department TEXT', (derr) => {
+        if (derr) console.error('Failed to add department column:', derr);
+      });
+    }
+    const hasTags = cols && cols.some((c: any) => c.name === 'tags');
+    if (!hasTags) {
+      db.run('ALTER TABLE files ADD COLUMN tags TEXT', (terr) => {
+        if (terr) console.error('Failed to add tags column:', terr);
+      });
+    }
   });
 
   db.all("PRAGMA table_info(folders)", (err, cols) => {
@@ -56,6 +69,20 @@ db.serialize(() => {
       });
     }
   });
+
+  // Ensure Taxonomy tables (extra check)
+  db.run(`CREATE TABLE IF NOT EXISTS departments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    description TEXT,
+    color TEXT
+  )`);
+  
+  db.run(`CREATE TABLE IF NOT EXISTS global_tags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    color TEXT
+  )`);
 });
 
 export function logAudit(userId: number | null, action: string) {

@@ -28,7 +28,28 @@ export const deleteFile = async (id: string) => {
   return res.data;
 }
 
+export const updateFileMetadata = async (id: string, metadata: { name?: string, department?: string, tags?: string }) => {
+  const res = await api.patch(`/api/files/${id}`, metadata);
+  return res.data;
+}
+
 export const toggleFileVisibility = async (id: string, isPublic: boolean) => {
   const res = await api.patch(`/api/files/${id}/visibility`, { is_public: isPublic });
+  return res.data;
+}
+
+export const advancedSearch = async (params: { 
+  q?: string, 
+  type?: string, 
+  department?: string, 
+  tags?: string, 
+  startDate?: string, 
+  endDate?: string 
+}) => {
+  const queryParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) queryParams.append(key, value);
+  });
+  const res = await api.get(`/api/files/search?${queryParams.toString()}`);
   return res.data;
 }

@@ -178,7 +178,7 @@ body::after{width:60vmax;height:60vmax;background:radial-gradient(circle at 80% 
 .navbar .brand{font-weight:700;font-size:18px;color:var(--color-green-500)}
 .nav-center .input-glass{padding:10px 14px;border-radius:999px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.6)}
 
-.sidebar{background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(245,247,249,0.9));border-radius:12px;border:1px solid rgba(16,24,32,0.03);padding:12px}
+.sidebar{background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(245,247,249,0.9));border-radius:12px;border:1px solid rgba(16,24,32,0.03);padding:12px;overflow:visible !important}
 .side-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;cursor:pointer;color:#0f1724}
 .side-item svg,.side-item .icon{width:18px;height:18px;display:inline-block}
 .side-item.active{background:linear-gradient(90deg, rgba(33,192,122,0.08), rgba(33,192,122,0.04));font-weight:600}
@@ -223,11 +223,12 @@ body::after{width:60vmax;height:60vmax;background:radial-gradient(circle at 80% 
 .tabs .pill-btn.secondary.active{background:linear-gradient(180deg,var(--color-green-500),#18a566);color:#fff;border:none;box-shadow:0 8px 20px rgba(33,192,122,0.25)}
 /* Options menu */
 .options-wrapper{position:relative}
-.options-trigger{border:none;background:rgba(255,255,255,0.7);border-radius:6px;padding:6px 10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px rgba(12,16,20,0.08)}
+.options-trigger{border:none;background:rgba(255,255,255,0.9);border-radius:8px;padding:8px 12px;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px rgba(12,16,20,0.12);transition:all 0.2s}
+.options-trigger:hover{background:#fff;transform:scale(1.05)}
 .options-trigger:focus-visible{outline:2px solid rgba(33,192,122,0.5)}
-.options-menu{position:absolute;right:0;bottom:110%;background:#fff;border-radius:10px;border:1px solid rgba(16,24,32,0.08);box-shadow:0 14px 30px rgba(12,16,20,0.15);padding:8px;display:flex;flex-direction:column;gap:6px;min-width:150px;z-index:999}
-.options-menu button{background:transparent;border:none;padding:8px 10px;border-radius:8px;text-align:left;cursor:pointer;font-size:14px}
-.options-menu button:hover{background:rgba(33,192,122,0.08)}
+.options-menu{position:absolute;right:0;top:100%;background:#fff;border-radius:12px;border:1px solid rgba(16,24,32,0.1);box-shadow:0 18px 45px rgba(12,16,20,0.2);padding:10px;display:flex;flex-direction:column;gap:4px;min-width:180px;z-index:9999;margin-top:8px;overflow:visible}
+.options-menu button{background:transparent;border:none;padding:12px 16px;border-radius:8px;text-align:left;cursor:pointer;font-size:16px;color:#334155;display:flex;align-items:center;gap:12px;transition:background 0.2s}
+.options-menu button:hover{background:rgba(33,192,122,0.1);color:var(--color-green-600)}
 .options-menu button:disabled{opacity:0.5;cursor:not-allowed}
 .swal-file-viewer{max-width:420px}
 
@@ -271,8 +272,8 @@ body::after{width:60vmax;height:60vmax;background:radial-gradient(circle at 80% 
 .files-subtitle{color:#64748b;font-size:13px}
 .files-actions{display:flex;align-items:center;gap:12px}
 
-.folder-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
-.folder-card{background:transparent;border:none;padding:0;display:flex;flex-direction:column;gap:10px;min-height:120px}
+.folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.folder-card{background:transparent;border:none;padding:0;display:flex;flex-direction:column;gap:10px;min-height:100px;max-width:320px}
 .folder-card.drop-target .folder-body{transform:translateY(-4px);box-shadow:0 20px 40px rgba(33,192,122,0.12);border-color:rgba(33,192,122,0.18)}
 .folder-card.selected .folder-body{transform:translateY(-6px);box-shadow:0 22px 46px rgba(33,192,122,0.14);border-color:rgba(33,192,122,0.20)}
 .folder-shape{position:relative}
@@ -303,11 +304,11 @@ body::after{width:60vmax;height:60vmax;background:radial-gradient(circle at 80% 
 @keyframes rocket-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 @keyframes rocket-shake{0%,100%{transform:rotate(0deg) translateY(0)}25%{transform:rotate(-8deg) translateY(-4px)}75%{transform:rotate(8deg) translateY(-2px)}}
 @keyframes sparkle-float{0%,100%{transform:translateY(0) scale(1);opacity:1}50%{transform:translateY(-12px) scale(1.1);opacity:0.6}}
-.folder-body{background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(250,251,253,0.95));border-radius:12px;padding:14px;border:1px solid rgba(12,16,20,0.04);box-shadow:0 8px 18px rgba(12,16,20,0.04);display:flex;flex-direction:row;align-items:center;gap:12px}
+.folder-body{background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(250,251,253,0.95));border-radius:12px;padding:18px 16px;border:1px solid rgba(12,16,20,0.04);box-shadow:0 8px 18px rgba(12,16,20,0.04);display:flex;flex-direction:row;align-items:center;gap:14px}
 .folder-body-left{flex:0 0 auto}
-.folder-body-right{flex:1 1 auto}
-.folder-icon{width:36px;height:36px;color:var(--color-white);background:linear-gradient(180deg,var(--color-green-500),#18a566);padding:6px;border-radius:8px;box-shadow:0 8px 20px rgba(33,192,122,0.18)}
-.folder-card-title{font-size:16px;font-weight:700;margin:0}
+.folder-body-right{flex:1 1 auto;width: 0; min-width: 0;}
+.folder-icon{width:42px;height:42px;color:var(--color-white);background:linear-gradient(180deg,var(--color-green-500),#18a566);padding:8px;border-radius:10px;box-shadow:0 8px 20px rgba(33,192,122,0.18)}
+.folder-card-title{font-size:16px;font-weight:700;margin:0;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* show pointer cursor for interactive elements */
 .folder-card, .folder-body, .folder-body * { cursor: pointer; }

@@ -8,14 +8,21 @@ import {
   ArchiveBoxIcon,
   LockClosedIcon,
   GlobeAltIcon,
-  UserPlusIcon
+  UserPlusIcon,
+  EyeIcon,
+  ArrowDownTrayIcon,
+  InformationCircleIcon,
+  ArrowPathRoundedSquareIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { moveFile, deleteFile, toggleFileVisibility } from '../api'
+import { moveFile, deleteFile, toggleFileVisibility, updateFileMetadata } from '../api'
+import api from '../../../services/api'
 import { useFolders } from '../../folders/hooks/useFolders'
 import { confirm, select, toastError, toastSuccess } from '../../../utils/swal'
 import MySwal from '../../../utils/swal'
 import styles from '../../../styles/components/FileCard.module.css'
+import { PencilSquareIcon } from '@heroicons/react/24/outline'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000'
 const apiUrl = (path: string) => `${API_BASE}${path}`
@@ -26,10 +33,12 @@ interface FileCardProps {
   type?: string
   size?: number
   isPublic?: number
+  department?: string
+  tags?: string
   onShare?: (id: string, name: string) => void
 }
 
-export default function FileCard({ id, name, type, size, isPublic, onShare }: FileCardProps) {
+export default function FileCard({ id, name, type, size, isPublic, department, tags, onShare }: FileCardProps) {
   const isImage = type?.startsWith('image')
   const qc = useQueryClient()
   const { data: folders } = useFolders()
@@ -106,6 +115,61 @@ export default function FileCard({ id, name, type, size, isPublic, onShare }: Fi
 
   const handleToggleVisibility = () => {
     visibility.mutate(!isPublic)
+  }
+
+  const editMetadata = useMutation({
+    mutationFn: (data: { name: string, department?: string, tags?: string }) => updateFileMetadata(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['files'] })
+      toastSuccess('Metadatos actualizados')
+    },
+    onError: () => toastError('Error al actualizar metadatos')
+  })
+
+  const handleClassify = async () => {
+    // Fetch available taxonomies
+    const [deptsRes, tagsRes] = await Promise.allSettled([
+      api.get('/api/taxonomy/departments'),
+      api.get('/api/taxonomy/tags')
+    ]);
+
+    const depts = deptsRes.status === 'fulfilled' ? deptsRes.value.data : [];
+    const availableTags = tagsRes.status === 'fulfilled' ? tagsRes.value.data : [];
+
+    const deptsOptions = depts.map((d: any) => `<option value="${d.name}" ${department === d.name ? 'selected' : ''}>${d.name}</option>`).join('');
+    const tagsHtml = availableTags.map((t: any) => `<option value="${t.name}">`).join('');
+
+    const { value: formValues } = await MySwal.fire({
+      title: 'Clasificar archivo',
+      html: `
+        <div style="text-align: left;">
+          <label class="swal2-label">Departamento:</label>
+          <select id="swal-dept" class="swal2-input" style="display: flex; width: 100%; box-sizing: border-box;">
+            <option value="">-- Sin departamento --</option>
+            ${deptsOptions}
+          </select>
+          
+          <label class="swal2-label" style="margin-top: 15px; display: block;">Etiquetas:</label>
+          <input id="swal-tags" class="swal2-input" value="${tags || ''}" list="tags-list" placeholder="Selecciona o escribe etiquetas...">
+          <datalist id="tags-list">${tagsHtml}</datalist>
+          <p style="font-size: 11px; color: #64748b; margin-top: 4px;">Selecciona etiquetas de la lista global (separadas por coma).</p>
+        </div>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Actualizar',
+      preConfirm: () => {
+        return {
+          name: name, // Keep existing name
+          department: (document.getElementById('swal-dept') as HTMLSelectElement).value,
+          tags: (document.getElementById('swal-tags') as HTMLInputElement).value
+        }
+      }
+    })
+
+    if (formValues) {
+      editMetadata.mutate(formValues)
+    }
   }
 
   const fetchChecksum = async () => {
@@ -318,7 +382,7 @@ export default function FileCard({ id, name, type, size, isPublic, onShare }: Fi
 
   return (
     <div
-      className={`${styles.card} ${toneClass}`}
+      className={`${styles.card} ${toneClass} ${menuOpen ? styles.cardActive : ''}`}
       draggable
       onDragStart={(e) => {
         e.dataTransfer.setData('application/file-id', id)
@@ -385,22 +449,35 @@ export default function FileCard({ id, name, type, size, isPublic, onShare }: Fi
           </button>
           {menuOpen && (
             <div className="options-menu">
-              <button type="button" onClick={() => handleMenuAction(viewFile)}>Ver archivo</button>
+              <button type="button" onClick={() => handleMenuAction(viewFile)}>
+                <EyeIcon className="w-4 h-4 mr-2" /> Ver archivo
+              </button>
               {onShare && (
                 <button type="button" onClick={() => handleMenuAction(() => onShare(id, name))}>
-                  Compartir
+                  <UserPlusIcon className="w-4 h-4 mr-2" /> Compartir
                 </button>
               )}
-              <button type="button" onClick={() => handleMenuAction(handleDownload)}>Descargar</button>
-              <button type="button" onClick={() => handleMenuAction(showDetails)}>Ver detalles</button>
+              <button type="button" onClick={() => handleMenuAction(handleDownload)}>
+                <ArrowDownTrayIcon className="w-4 h-4 mr-2" /> Descargar
+              </button>
+              <button type="button" onClick={() => handleMenuAction(handleClassify)}>
+                <PencilSquareIcon className="w-4 h-4 mr-2" /> Categorías
+              </button>
+              <button type="button" onClick={() => handleMenuAction(showDetails)}>
+                <InformationCircleIcon className="w-4 h-4 mr-2" /> Ver detalles
+              </button>
               <button type="button" onClick={() => handleMenuAction(handleMove)} disabled={moving}>
-                {moving ? 'Moviendo…' : 'Mover'}
+                <ArrowPathRoundedSquareIcon className="w-4 h-4 mr-2" /> {moving ? 'Moviendo…' : 'Mover'}
               </button>
               <button type="button" onClick={() => handleMenuAction(handleToggleVisibility)} disabled={visibility.isPending}>
-                {isPublic ? '🔒 Hacer privado' : '🌐 Hacer público'}
+                {isPublic ? (
+                  <><LockClosedIcon className="w-4 h-4 mr-2" /> Hacer privado</>
+                ) : (
+                  <><GlobeAltIcon className="w-4 h-4 mr-2" /> Hacer público</>
+                )}
               </button>
-              <button type="button" onClick={() => handleMenuAction(handleDelete)} disabled={del.isPending}>
-                {del.isPending ? 'Eliminando…' : 'Eliminar'}
+              <button type="button" onClick={() => handleMenuAction(handleDelete)} disabled={del.isPending} style={{ color: '#ef4444' }}>
+                <TrashIcon className="w-4 h-4 mr-2" /> {del.isPending ? 'Eliminando…' : 'Eliminar'}
               </button>
             </div>
           )}

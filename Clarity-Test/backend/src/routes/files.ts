@@ -35,14 +35,60 @@ function computeFileSha256(filePath: string): Promise<string> {
 router.get('/', (req, res) => {
   const folder = req.query.folder ? Number(req.query.folder) : null;
   if (folder != null) {
-    db.all('SELECT id, name, type, size, owner_id, is_public, created_at, folder_id FROM files WHERE folder_id IS ? ORDER BY created_at DESC', [folder], (err: any, rows: any) => {
+    db.all('SELECT id, name, type, size, owner_id, is_public, created_at, folder_id, department, tags FROM files WHERE folder_id IS ? ORDER BY created_at DESC', [folder], (err: any, rows: any) => {
       if (err) return res.status(500).json({ error: 'db error' });
       res.json(rows);
     });
     return;
   }
-  db.all('SELECT id, name, type, size, owner_id, is_public, created_at, folder_id FROM files ORDER BY created_at DESC', [], (err: any, rows: any) => {
+  db.all('SELECT id, name, type, size, owner_id, is_public, created_at, folder_id, department, tags FROM files ORDER BY created_at DESC', [], (err: any, rows: any) => {
     if (err) return res.status(500).json({ error: 'db error' });
+    res.json(rows);
+  });
+});
+
+// Advanced search
+router.get('/search', authMiddleware, (req, res) => {
+  const { q, type, department, tags, startDate, endDate } = req.query;
+  const user = (req as any).user;
+  
+  let sql = 'SELECT id, name, type, size, owner_id, is_public, created_at, folder_id, department, tags FROM files WHERE (owner_id = ? OR is_public = 1)';
+  const params: any[] = [user.id];
+
+  if (q) {
+    sql += ' AND (name LIKE ? OR department LIKE ? OR tags LIKE ?)';
+    params.push(`%${q}%`);
+    params.push(`%${q}%`);
+    params.push(`%${q}%`);
+  }
+  if (type) {
+    sql += ' AND type LIKE ?';
+    params.push(`%${type}%`);
+  }
+  if (department) {
+    sql += ' AND department LIKE ?';
+    params.push(`%${department}%`);
+  }
+  if (tags) {
+    sql += ' AND tags LIKE ?';
+    params.push(`%${tags}%`);
+  }
+  if (startDate) {
+    sql += ' AND created_at >= ?';
+    params.push(startDate);
+  }
+  if (endDate) {
+    sql += ' AND created_at <= ?';
+    params.push(endDate);
+  }
+
+  sql += ' ORDER BY created_at DESC';
+
+  db.all(sql, params, (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'db error' });
+    }
     res.json(rows);
   });
 });
@@ -98,35 +144,79 @@ router.patch('/folders/:id', jsonParser, authMiddleware, (req, res) => {
   });
 });
 
-// delete folder (DELETE /api/files/folders/:id) - disallow if not empty
-router.delete('/folders/:id', authMiddleware, (req, res) => {
+// delete folder (DELETE /api/files/folders/:id) - recursive delete
+router.delete('/folders/:id', authMiddleware, async (req, res) => {
   const id = req.params.id;
-  // check existence
-    db.get('SELECT id, name, owner_id FROM folders WHERE id = ?', [id], async (err: any, row: any) => {
-      if (err || !row) return res.status(404).json({ error: 'not found' });
-      const user = (req as any).user;
-      const allowed = await checkPermission(user.id, 'folder', Number(id), 'delete');
-      if (!allowed) return res.status(403).json({ error: 'forbidden' });
+  const user = (req as any).user;
 
-      // check for files in folder
-      db.get('SELECT 1 FROM files WHERE folder_id = ? LIMIT 1', [id], (ferr: any, frow: any) => {
-        if (ferr) return res.status(500).json({ error: 'db error' });
-        if (frow) return res.status(400).json({ error: 'folder not empty (has files)' });
-
-        // check for subfolders
-        db.get('SELECT 1 FROM folders WHERE parent_id = ? LIMIT 1', [id], (serr: any, srow: any) => {
-          if (serr) return res.status(500).json({ error: 'db error' });
-          if (srow) return res.status(400).json({ error: 'folder not empty (has subfolders)' });
-
-          // safe to delete
-          db.run('DELETE FROM folders WHERE id = ?', [id], function (derr: any) {
-            if (derr) return res.status(500).json({ error: 'db error' });
-            logAudit(user.id, `delete:folder:${id}:${row.name}`);
-            res.json({ deleted: this.changes });
-          });
-        });
+  try {
+    // 1. Check existence and permissions
+    const folder = await new Promise<any>((resolve, reject) => {
+      db.get('SELECT id, name, owner_id FROM folders WHERE id = ?', [id], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
       });
     });
+
+    if (!folder) return res.status(404).json({ error: 'not found' });
+    
+    const allowed = await checkPermission(user.id, 'folder', Number(id), 'delete');
+    if (!allowed) return res.status(403).json({ error: 'forbidden' });
+
+    // 2. Recursive deletion helper
+    const deleteFolderRecursive = async (fid: number) => {
+      // Find subfolders
+      const subfolders = await new Promise<any[]>((resolve, reject) => {
+        db.all('SELECT id FROM folders WHERE parent_id = ?', [fid], (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows || []);
+        });
+      });
+
+      for (const sf of subfolders) {
+        await deleteFolderRecursive(sf.id);
+      }
+
+      // Find and delete files in this folder
+      const files = await new Promise<any[]>((resolve, reject) => {
+        db.all('SELECT id, path FROM files WHERE folder_id = ?', [fid], (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows || []);
+        });
+      });
+
+      for (const file of files) {
+        try {
+          if (file.path && fs.existsSync(file.path)) fs.unlinkSync(file.path);
+        } catch (e) {
+          console.error(`Failed to delete file on disk: ${file.path}`, e);
+        }
+        await new Promise<void>((resolve, reject) => {
+          db.run('DELETE FROM files WHERE id = ?', [file.id], (err) => {
+            if (err) reject(err);
+            else resolve();
+          });
+        });
+      }
+
+      // Finally delete the folder itself
+      await new Promise<void>((resolve, reject) => {
+        db.run('DELETE FROM folders WHERE id = ?', [fid], (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+      
+      logAudit(user.id, `delete:folder_recursive:${fid}`);
+    };
+
+    await deleteFolderRecursive(Number(id));
+    res.json({ deleted: 1 });
+
+  } catch (error: any) {
+    console.error('Error during recursive folder deletion:', error);
+    res.status(500).json({ error: 'failed to delete folder and contents' });
+  }
 });
 
 router.post('/', authMiddleware, upload.array('files'), async (req, res) => {
@@ -585,25 +675,30 @@ router.patch('/:id/move', jsonParser, authMiddleware, (req, res) => {
 // GET /:id - file details (after specific routes)
 router.get('/:id', authMiddleware, (req, res) => {
   const id = req.params.id;
-  db.get('SELECT id, name, type, size, owner_id, is_public, created_at, folder_id FROM files WHERE id = ?', [id], (err: any, row: any) => {
+  db.get('SELECT id, name, type, size, owner_id, is_public, created_at, folder_id, department, tags FROM files WHERE id = ?', [id], (err: any, row: any) => {
     if (err || !row) return res.status(404).json({ error: 'not found' });
     res.json(row);
   });
 });
 
-// PATCH /:id - rename file (after specific routes)
+// PATCH /:id - update file metadata (after specific routes)
 router.patch('/:id', jsonParser, authMiddleware, (req, res) => {
   const id = req.params.id;
-  const { name } = req.body;
-  if (!name) return res.status(400).json({ error: 'name required' });
-  db.get('SELECT owner_id, name FROM files WHERE id = ?', [id], async (err: any, row: any) => {
+  const { name, department, tags } = req.body;
+  
+  db.get('SELECT owner_id, name, department, tags FROM files WHERE id = ?', [id], async (err: any, row: any) => {
     if (err || !row) return res.status(404).json({ error: 'not found' });
     const user = (req as any).user;
     const allowed = await checkPermission(user.id, 'file', Number(id), 'edit');
     if (!allowed) return res.status(403).json({ error: 'forbidden' });
-    db.run('UPDATE files SET name = ? WHERE id = ?', [name, id], function (uerr: any) {
+
+    const newName = name !== undefined ? name : row.name;
+    const newDept = department !== undefined ? department : row.department;
+    const newTags = tags !== undefined ? tags : row.tags;
+
+    db.run('UPDATE files SET name = ?, department = ?, tags = ? WHERE id = ?', [newName, newDept, newTags, id], function (uerr: any) {
       if (uerr) return res.status(500).json({ error: 'db error' });
-      logAudit(user.id, `rename:file:${id}:${row.name}->${name}`);
+      logAudit(user.id, `update:file:${id}:${row.name}->${newName}`);
       res.json({ updated: this.changes });
     });
   });

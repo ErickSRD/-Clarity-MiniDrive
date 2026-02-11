@@ -5,6 +5,8 @@ import authRoutes from './routes/auth';
 import filesRoutes from './routes/files';
 import adminRoutes from './routes/admin';
 import permissionsRoutes from './routes/permissions';
+import reportsRoutes from './routes/reports';
+import taxonomyRoutes from './routes/taxonomy';
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
@@ -38,6 +40,8 @@ app.use(bodyParser.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/permissions', permissionsRoutes);
+app.use('/api/reports', reportsRoutes);
+app.use('/api/taxonomy', taxonomyRoutes);
 
 // Ruta de archivos (se encarga internamente de no usar bodyParser donde no debe)
 app.use('/api/files', filesRoutes);

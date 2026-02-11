@@ -32,6 +32,8 @@ export default function FileList({ files, onShare }: { files: any, onShare?: (id
           type={f.type} 
           size={f.size} 
           isPublic={f.is_public} 
+          department={f.department}
+          tags={f.tags}
           onShare={onShare}
         />
       ))}

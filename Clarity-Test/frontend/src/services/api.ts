@@ -24,7 +24,15 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (r) => r,
   (err) => {
-    // central place for handling 401/refresh in future
+    if (err.response && err.response.status === 401) {
+      try {
+        localStorage.clear();
+        // Force redirect to login if session expires
+        if (!window.location.pathname.startsWith('/login')) {
+          window.location.href = '/login';
+        }
+      } catch (e) { /* ignore */ }
+    }
     return Promise.reject(err);
   }
 );

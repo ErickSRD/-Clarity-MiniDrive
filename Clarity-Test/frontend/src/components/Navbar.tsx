@@ -13,8 +13,7 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: { onToggleSideb
 
   function logout() {
     try { 
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
+      localStorage.clear()
     } catch {}
     navigate('/login')
   }
