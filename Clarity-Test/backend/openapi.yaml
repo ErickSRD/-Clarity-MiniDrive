@@ -1,0 +1,175 @@
+openapi: 3.0.3
+info:
+  title: MiniDrive API
+  version: '0.1.0'
+  description: Local-first MiniDrive API (sample OpenAPI for docs)
+servers:
+  - url: http://localhost:4000
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+paths:
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: user created
+  /api/auth/login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: returns JWT token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+  /api/auth/me:
+    get:
+      summary: Get current user profile
+      responses:
+        '200':
+          description: user profile
+  /api/files:
+    get:
+      summary: List files
+      responses:
+        '200':
+          description: list of files
+    post:
+      summary: Upload files (multipart)
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: upload result
+  /api/files/{id}/download:
+    get:
+      summary: Download file
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: file download
+  /api/files/folders:
+    get:
+      summary: List folders
+      parameters:
+        - in: query
+          name: parent
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: list of folders
+    post:
+      summary: Create folder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                parent_id:
+                  type: integer
+      responses:
+        '200':
+          description: folder created
+  /api/permissions:
+    post:
+      summary: Grant permission (owner_admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                resource_type:
+                  type: string
+                resource_id:
+                  type: integer
+                permission_type:
+                  type: string
+      responses:
+        '200':
+          description: granted
+    delete:
+      summary: Revoke permission (owner_admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                resource_type:
+                  type: string
+                resource_id:
+                  type: integer
+                permission_type:
+                  type: string
+      responses:
+        '200':
+          description: revoked
+  /api/admin/users:
+    get:
+      summary: List all users (admin)
+      responses:
+        '200':
+          description: list of users
+  /api/admin/audit:
+    get:
+      summary: Get audit logs (admin)
+      responses:
+        '200':
+          description: audit logs

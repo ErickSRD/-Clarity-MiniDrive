@@ -1,0 +1,204 @@
+.card {
+  cursor: pointer;
+  padding: 16px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+  border: 1px solid rgba(12, 16, 20, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+  will-change: transform, box-shadow;
+}
+
+.card:focus-within {
+  filter: brightness(1.02);
+}
+
+.card:hover {
+  transform: translateY(-6px);
+}
+
+.thumb {
+  position: relative;
+  height: 110px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgb(var(--tone-rgb) / 0.28), rgb(var(--tone-rgb) / 0.14));
+  box-shadow: 0 12px 30px rgb(var(--tone-rgb) / 0.25);
+}
+
+.previewImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.artwork {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.artworkHidden {
+  opacity: 0;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 999px;
+}
+
+.orbMain {
+  width: 80px;
+  height: 80px;
+  background: rgb(var(--tone-rgb) / 0.18);
+  box-shadow: 0 10px 25px rgb(var(--tone-rgb) / 0.4);
+}
+
+.orbFaint {
+  width: 60px;
+  height: 60px;
+  background: rgb(var(--tone-rgb) / 0.12);
+  left: 22%;
+  top: 20%;
+}
+
+.orbLined {
+  width: 90px;
+  height: 90px;
+  border: 1px solid rgb(var(--tone-rgb) / 0.28);
+  box-shadow: 0 0 20px rgb(var(--tone-rgb) / 0.2);
+}
+
+.fileIcon {
+  width: 46px;
+  height: 46px;
+  color: #ffffff;
+  display: inline-block;
+  filter: drop-shadow(0 8px 18px rgb(var(--tone-rgb) / 0.4));
+}
+
+.title {
+  font-size: 15px;
+  color: #0b1220;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  max-height: 2.8em;
+  min-height: 2.8em;
+}
+
+.typeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.typeBadge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 999px;
+  margin-top: 6px;
+  background: rgb(var(--tone-rgb) / 0.14);
+  color: var(--tone);
+  border: 1px solid rgb(var(--tone-rgb) / 0.22);
+}
+
+.meta {
+  color: #64748b;
+  font-size: 13px;
+  margin-top: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  flex: 1;
+  min-width: 0;
+}
+
+.visibilityRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.visibilityPublic,
+.visibilityPrivate {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.visibilityPublic {
+  color: #059669;
+}
+
+.visibilityPrivate {
+  color: #64748b;
+}
+
+.visibilityIcon {
+  width: 14px;
+  height: 14px;
+}
+
+.actions {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.toneImage {
+  --tone: #21c07a;
+  --tone-rgb: 33 192 122;
+}
+
+.tonePdf {
+  --tone: #ef4444;
+  --tone-rgb: 239 68 68;
+}
+
+.toneVideo {
+  --tone: #06b6d4;
+  --tone-rgb: 6 182 212;
+}
+
+.toneAudio {
+  --tone: #8b5cf6;
+  --tone-rgb: 139 92 246;
+}
+
+.toneArchive {
+  --tone: #64748b;
+  --tone-rgb: 100 116 139;
+}
+
+.toneCode {
+  --tone: #4f46e5;
+  --tone-rgb: 79 70 229;
+}
+
+.toneDefault {
+  --tone: #f59e0b;
+  --tone-rgb: 245 158 11;
+}

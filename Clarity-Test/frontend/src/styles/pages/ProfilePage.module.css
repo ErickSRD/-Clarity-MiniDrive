@@ -1,0 +1,206 @@
+.page {
+  padding: 32px 20px 40px;
+  background: #f8fafc;
+  min-height: 100%;
+}
+
+.container {
+  max-width: 920px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.subtitle {
+  color: #64748b;
+  font-size: 15px;
+  margin: 0;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 32px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 24px;
+}
+
+.avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0f6cbd 0%, #2b88d8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 28px rgba(15, 108, 189, 0.25);
+  flex-shrink: 0;
+}
+
+.avatarIcon {
+  width: 56px;
+  height: 56px;
+  color: #ffffff;
+}
+
+.profileName {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #475569;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.statusDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.role {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 8px;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 16px;
+}
+
+.inlineIcon {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.sectionIcon {
+  width: 26px;
+  height: 26px;
+  color: #0f6cbd;
+}
+
+.sectionSubtitle {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0 0 20px;
+}
+
+.passwordGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.note {
+  margin-top: 8px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, #e8f2ff 0%, #f0f7ff 100%);
+  border: 1px solid #cfe3ff;
+  border-radius: 14px;
+}
+
+.noteRow {
+  display: flex;
+  gap: 12px;
+}
+
+.noteIcon {
+  width: 22px;
+  height: 22px;
+  color: #0f6cbd;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.noteTitle {
+  font-size: 13px;
+  color: #0b4a8a;
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+.noteText {
+  font-size: 13px;
+  color: #1e3a5f;
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .formGrid,
+  .passwordGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .profileHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

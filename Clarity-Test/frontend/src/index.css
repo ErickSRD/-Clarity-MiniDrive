@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--font-sans: 'Sora', 'Segoe UI', 'Helvetica Neue', sans-serif;
+	--brand-primary: #0f6cbd;
+	--brand-muted: #475569;
+	--surface: #ffffff;
+	--surface-muted: #f4f6fb;
+}
+
+body {
+	font-family: var(--font-sans);
+	background: var(--surface-muted);
+	color: #0f172a;
+	margin: 0;
+}
+/* Modern SweetAlert2 Designs */
+.glass-popup {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15) !important;
+  padding: 2rem !important;
+}
+
+.glass-title {
+  font-family: var(--font-sans) !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  font-size: 1.5rem !important;
+}
+
+.modern-toast {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 16px !important;
+  font-family: var(--font-sans) !important;
+  padding: 0.75rem 1rem !important;
+}
+
+.pill-btn {
+  padding: 0.6rem 1.5rem !important;
+  border-radius: 9999px !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  transition: all 0.2s ease !important;
+  margin: 0.5rem !important;
+  border: none !important;
+  cursor: pointer !important;
+}
+
+.pill-btn.primary {
+  background: var(--brand-primary) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px 0 rgba(15, 108, 189, 0.39) !important;
+}
+
+.pill-btn.primary:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(15, 108, 189, 0.23) !important;
+}
+
+.pill-btn.secondary {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+.pill-btn.secondary:hover {
+  background: #e2e8f0 !important;
+}
+
+.glass-input {
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+  padding: 0.75rem 1rem !important;
+  font-family: var(--font-sans) !important;
+  margin-top: 1rem !important;
+}
+
+.glass-input:focus {
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 0 3px rgba(15, 108, 189, 0.1) !important;
+}
+
+.swal2-html-container {
+  color: #64748b !important;
+  font-size: 0.95rem !important;
+  line-height: 1.5 !important;
+}

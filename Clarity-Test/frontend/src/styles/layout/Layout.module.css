@@ -1,0 +1,27 @@
+.layoutRoot {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px 28px;
+}
+
+.layoutBody {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 24px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.mainContent {
+  min-width: 0;
+}
+
+@media (max-width: 980px) {
+  .layoutBody {
+    grid-template-columns: 1fr;
+  }
+}

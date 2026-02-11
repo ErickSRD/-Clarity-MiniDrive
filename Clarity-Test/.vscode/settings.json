@@ -1,0 +1,14 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "npm run dev": true,
+        "npm audit": true,
+        "/^node dist/server\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^node backend/dist/server\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

@@ -1,0 +1,158 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.headerLeft {
+  flex: 1 1 60%;
+  min-width: 240px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.subtitle {
+  color: #64748b;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.viewToggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0 0;
+  padding: 10px 14px;
+  background: #eef2f7;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.viewLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.viewButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.viewButton {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #d0d7e2;
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.viewIcon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.viewButtonActive {
+  background: #0f6cbd;
+  border-color: #0f6cbd;
+  color: #ffffff;
+}
+
+.contentArea {
+  padding: 20px;
+  background: #f8fafc;
+  border: 1px solid #e6edf5;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.chartCard {
+  margin-top: 24px;
+  padding: 24px;
+}
+
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.chartTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.chartBadge {
+  font-size: 12px;
+  color: #475569;
+  background: #eef2f7;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.chartBody {
+  height: 250px;
+  width: 100%;
+}
+
+@media (max-width: 720px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .viewToggle {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
