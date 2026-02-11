@@ -1,4 +1,4 @@
 import app from './app';
 
 const port = process.env.PORT || 4000;
-app.listen(port, () => console.log(`MiniDrive backend listening on ${port}`));
+app.listen(port, () => console.log(`Clarity backend listening on ${port}`));

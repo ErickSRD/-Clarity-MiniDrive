@@ -22,8 +22,8 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: { onToggleSideb
   return (
     <header className="navbar">
       <div className="nav-left">
-        <button className="mobile-menu-btn pill-btn secondary" aria-label="menu" onClick={() => onToggleSidebar && onToggleSidebar()} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggleSidebar && onToggleSidebar() } }}>
-          <Bars3Icon className="icon-svg" />
+        <button className="mobile-menu-btn sq-btn secondary" aria-label="menu" onClick={() => onToggleSidebar && onToggleSidebar()} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggleSidebar && onToggleSidebar() } }}>
+          <Bars3Icon className="sq-icon" />
         </button>
         <button className="brand brand-button" onClick={() => navigate('/board')} type="button">
           Clarity
@@ -50,7 +50,7 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: { onToggleSideb
       </div>
       <div className="nav-right">
         <div className="user-menu">
-          <button className="pill-btn user-btn" onClick={() => setOpen((s) => !s)}>
+          <button className="sq-btn user-btn" onClick={() => setOpen((s) => !s)}>
             <span className="avatar"></span>
             <span>{user?.name || user?.email || 'Mi cuenta'} ▾</span>
           </button>

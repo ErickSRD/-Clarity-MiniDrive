@@ -74,6 +74,51 @@ body {
   background: #e2e8f0 !important;
 }
 
+/* Custom Square Green Buttons */
+.sq-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  padding: 0.6rem 1rem !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  transition: all 0.2s ease !important;
+  border: none !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  margin: 0.25rem !important;
+}
+
+.sq-btn.green {
+  background: #22c55e !important;
+  color: white !important;
+}
+
+.sq-btn.green:hover {
+  background: #16a34a !important;
+}
+
+.sq-btn.secondary {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+.sq-btn.secondary:hover {
+  background: #e2e8f0 !important;
+}
+
+.sq-btn.active {
+  background: #22c55e !important;
+  color: white !important;
+}
+
+.sq-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
 .glass-input {
   border-radius: 12px !important;
   border: 1px solid #e2e8f0 !important;
@@ -91,4 +136,145 @@ body {
   color: #64748b !important;
   font-size: 0.95rem !important;
   line-height: 1.5 !important;
+}
+
+/* Tree Folder Styles */
+.folder-tree-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.folder-tree-children {
+  margin-left: 1.25rem;
+  border-left: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.folder-tree-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+.folder-tree-row:hover {
+  background: #f1f5f9;
+}
+
+.folder-tree-row.active {
+  background: #16a34a !important;
+  color: white !important;
+}
+
+.active-icon {
+  color: white !important;
+}
+
+.active-btn {
+  color: white !important;
+}
+
+.active-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.active-btn-danger {
+  color: white !important;
+}
+
+.active-btn-danger:hover {
+  background: #dc2626 !important;
+}
+
+.folder-tree-row::before {
+  content: '';
+  position: absolute;
+  left: -1.25rem;
+  top: 50%;
+  width: 0.75rem;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.folder-tree-children > .folder-tree-item:last-child > .folder-tree-row::after {
+  content: '';
+  position: absolute;
+  left: -1.25rem;
+  top: 0;
+  width: 1px;
+  height: 50%;
+  background: white; /* Cover the line below the last child */
+}
+
+.folder-tree-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  font-size: 14px;
+  flex: 1;
+  min-width: 0; /* Crucial for child truncation in flex */
+}
+
+.folder-tree-label span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-toggle-btn {
+  background: transparent !important;
+  border: none !important;
+  padding: 2px !important;
+  margin-right: 4px !important;
+  color: #64748b !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tree-toggle-btn:hover {
+  background: #e2e8f0 !important;
+  border-radius: 4px;
+}
+
+.tree-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: #16a34a; /* Green folders in tree */
+  flex-shrink: 0;
+}
+
+.tree-controls {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.folder-tree-row:hover .tree-controls {
+  opacity: 1;
+}
+
+.tree-btn {
+  padding: 4px;
+  border-radius: 4px;
+  color: #94a3b8;
+}
+
+.tree-btn:hover {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.tree-btn.danger:hover {
+  color: #ef4444;
 }

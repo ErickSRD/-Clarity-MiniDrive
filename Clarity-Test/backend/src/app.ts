@@ -49,6 +49,6 @@ if (swaggerDoc) {
   app.get('/docs', (req, res) => res.redirect('/docs/'));
 }
 
-app.get('/', (req, res) => res.json({ status: 'MiniDrive backend running' }));
+app.get('/', (req, res) => res.json({ status: 'Clarity backend running' }));
 
 export default app;

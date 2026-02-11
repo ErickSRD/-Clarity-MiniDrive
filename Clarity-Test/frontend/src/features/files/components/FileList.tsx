@@ -2,7 +2,7 @@ import React from 'react'
 import FileCard from './FileCard'
 import { RocketLaunchIcon, SparklesIcon } from '@heroicons/react/24/outline'
 
-export default function FileList({ files }: { files: any }) {
+export default function FileList({ files, onShare }: { files: any, onShare?: (id: string, name: string) => void }) {
   const list: any[] = Array.isArray(files)
     ? files
     : files && Array.isArray(files.uploaded)
@@ -25,7 +25,15 @@ export default function FileList({ files }: { files: any }) {
   return (
     <div className="file-grid">
       {list.map((f) => (
-        <FileCard key={f.id} id={f.id} name={f.name} type={f.type} size={f.size} isPublic={f.is_public} />
+        <FileCard 
+          key={f.id} 
+          id={f.id} 
+          name={f.name} 
+          type={f.type} 
+          size={f.size} 
+          isPublic={f.is_public} 
+          onShare={onShare}
+        />
       ))}
     </div>
   )

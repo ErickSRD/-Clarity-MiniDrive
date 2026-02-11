@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS folders (
   name TEXT NOT NULL,
   parent_id INTEGER,
   owner_id INTEGER,
+  color TEXT,
+  icon TEXT,
   FOREIGN KEY(parent_id) REFERENCES folders(id),
   FOREIGN KEY(owner_id) REFERENCES users(id)
 );

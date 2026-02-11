@@ -1,5 +1,21 @@
 import React, { useState } from 'react'
-import { Squares2X2Icon, Bars3BottomLeftIcon } from '@heroicons/react/24/outline'
+import { 
+  Squares2X2Icon, 
+  Bars3BottomLeftIcon,
+  FolderIcon,
+  DocumentIcon,
+  PhotoIcon,
+  DocumentTextIcon,
+  ArchiveBoxIcon,
+  MusicalNoteIcon,
+  VideoCameraIcon,
+  CodeBracketIcon,
+  ArrowUpTrayIcon,
+  EllipsisVerticalIcon,
+  ArrowLeftIcon,
+  FolderPlusIcon,
+  ChevronRightIcon
+} from '@heroicons/react/24/outline'
 import FileListView from '../features/files/components/FileList'
 import EmptyFolder from '../features/files/components/EmptyFolder'
 import { moveFile } from '../features/files/api'
@@ -10,8 +26,9 @@ import FileListItem from '../components/FileListItem'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { useFolders } from '../features/folders/hooks/useFolders'
-import { toastError, toastSuccess } from '../utils/swal'
+import { toastError, toastSuccess, MySwal, folderCustomizer } from '../utils/swal'
 import FolderGrid from '../features/folders/components/FolderGrid'
+import ShareModal from '../features/permissions/components/ShareModal'
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import styles from '../styles/pages/BoardPage.module.css'
@@ -28,13 +45,24 @@ function DynamicContentArea({ children }: { children: React.ReactNode }) {
 
 export default function BoardPage() {
   const [search, setSearch] = useSearchParams()
-  const [selectedTab, setSelectedTab] = React.useState<'todos' | 'carpetas' | 'archivos' | 'imagenes' | 'pdf' | 'documentos' | 'comprimidos' | 'audio' | 'video' | 'codigo'>('todos')
+  const [selectedTab, setSelectedTab] = React.useState<'todos' | 'carpetas' | 'archivos' | 'imagenes' | 'pdf' | 'documentos' | 'comprimidos' | 'audio' | 'video'>('todos')
   const folderId = search.get('folder') || undefined
   const query = (search.get('q') || '').trim().toLowerCase()
   const { data, isLoading, isError, upload } = useFiles(folderId)
   const { data: allData } = useFiles()
-  const { data: folders, isLoading: foldersLoading, isError: foldersError } = useFolders()
+  const { 
+    data: folders, 
+    isLoading: foldersLoading, 
+    isError: foldersError, 
+    rename: renameFolderMutation, 
+    remove: deleteFolderMutation,
+    create: createFolderMutation
+  } = useFolders()
   const [selectedFolderId, setSelectedFolderId] = React.useState<string | null>(null)
+  const [sharingResource, setSharingResource] = React.useState<{ type: 'file' | 'folder', id: string, name: string } | null>(null)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortBy, setSortBy] = useState<'name' | 'date' | 'size'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const qc = useQueryClient()
   const moveMutation = useMutation({
     mutationFn: ({ fileId, folderId }: { fileId: string; folderId: string }) => moveFile(fileId, folderId),
@@ -46,6 +74,21 @@ export default function BoardPage() {
     onError: () => toastError('No se pudo mover el archivo')
   })
   const currentFolder = folderId && folders ? folders.find((f: any) => f.id === folderId) : null
+
+  const breadcrumbs = React.useMemo(() => {
+    const crumbs = [{ id: '', name: 'Mis archivos' }]
+    if (!folderId || !folders) return crumbs
+    
+    const path: any[] = []
+    let current = folders.find((f: any) => String(f.id) === String(folderId))
+    while (current) {
+      path.unshift({ id: String(current.id), name: current.name })
+      const pid = current.parent_id
+      current = pid ? folders.find((f: any) => String(f.id) === String(pid)) : null
+    }
+    return [...crumbs, ...path]
+  }, [folderId, folders])
+
   const normalizedFiles = React.useMemo(() => {
     if (!data) return []
     if (Array.isArray(data)) return data
@@ -81,36 +124,45 @@ export default function BoardPage() {
       list = normalizedFiles.filter((file: any) => file.type?.startsWith('audio') || ['mp3', 'wav', 'ogg', 'm4a', 'flac'].includes(getFileExt(file.name)))
     } else if (selectedTab === 'video') {
       list = normalizedFiles.filter((file: any) => file.type?.startsWith('video') || ['mp4', 'mkv', 'mov', 'webm', 'avi'].includes(getFileExt(file.name)))
-    } else if (selectedTab === 'codigo') {
-      list = normalizedFiles.filter((file: any) => {
-        const ext = getFileExt(file.name)
-        return ['js', 'ts', 'jsx', 'tsx', 'py', 'rb', 'go', 'java', 'c', 'cpp', 'cs', 'rs', 'php', 'html', 'css', 'json', 'xml'].includes(ext)
-      })
     } else if (selectedTab === 'todos') {
       list = normalizedAllFiles
     } else {
       list = normalizedFiles
     }
 
-    if (!query) return list
+    if (!query) {
+      // still return list if no query
+    } else {
+      list = list.filter((file: any) => {
+        const name = String(file.name || '').toLowerCase()
+        const type = String(file.type || '').toLowerCase()
+        return name.includes(query) || type.includes(query)
+      })
+    }
 
-    return list.filter((file: any) => {
-      const name = String(file.name || '').toLowerCase()
-      const type = String(file.type || '').toLowerCase()
-      return name.includes(query) || type.includes(query)
-    })
-  }, [normalizedFiles, normalizedAllFiles, selectedTab, folderId, query])
-  const tabs: { key: 'todos' | 'carpetas' | 'archivos' | 'imagenes' | 'pdf' | 'documentos' | 'comprimidos' | 'audio' | 'video' | 'codigo'; label: string }[] = [
-    { key: 'todos', label: 'Todos' },
-    { key: 'carpetas', label: 'Carpetas' },
-    { key: 'archivos', label: 'Archivos' },
-    { key: 'imagenes', label: 'Imágenes' },
-    { key: 'pdf', label: 'PDF' },
-    { key: 'documentos', label: 'Documentos' },
-    { key: 'comprimidos', label: 'Archivos' },
-    { key: 'audio', label: 'Audio' },
-    { key: 'video', label: 'Video' },
-    { key: 'codigo', label: 'Código' }
+    // Apply sorting
+    return [...list].sort((a, b) => {
+      let comparison = 0;
+      if (sortBy === 'name') {
+        comparison = a.name.localeCompare(b.name);
+      } else if (sortBy === 'size') {
+        comparison = (a.size || 0) - (b.size || 0);
+      } else if (sortBy === 'date') {
+        comparison = new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
+      }
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+  }, [normalizedFiles, normalizedAllFiles, selectedTab, folderId, query, sortBy, sortOrder])
+  const tabs: { key: 'todos' | 'carpetas' | 'archivos' | 'imagenes' | 'pdf' | 'documentos' | 'comprimidos' | 'audio' | 'video'; label: string; icon: any }[] = [
+    { key: 'todos', label: 'Todos', icon: Squares2X2Icon },
+    { key: 'carpetas', label: 'Carpetas', icon: FolderIcon },
+    { key: 'archivos', label: 'Archivos', icon: DocumentIcon },
+    { key: 'imagenes', label: 'Imágenes', icon: PhotoIcon },
+    { key: 'pdf', label: 'PDF', icon: DocumentTextIcon },
+    { key: 'documentos', label: 'Documentos', icon: DocumentIcon },
+    { key: 'comprimidos', label: 'Comprimidos', icon: ArchiveBoxIcon },
+    { key: 'audio', label: 'Audio', icon: MusicalNoteIcon },
+    { key: 'video', label: 'Video', icon: VideoCameraIcon }
   ]
   const showFolders = selectedTab === 'carpetas'
   const subtitleText = showFolders
@@ -214,34 +266,75 @@ export default function BoardPage() {
     }
   };
 
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const handleRenameFolder = async (id: string, currentName: string, currentColor?: string) => {
+    const result = await folderCustomizer(currentName, currentColor)
+
+    if (result) {
+      try {
+        await renameFolderMutation.mutateAsync({ id, name: result.name, color: result.color })
+        toastSuccess('Carpeta actualizada')
+      } catch (err) {
+        toastError('Error al actualizar')
+      }
+    }
+  }
+
+  const handleDeleteFolder = async (id: string) => {
+    const result = await MySwal.fire({
+      title: '¿Eliminar carpeta?',
+      text: 'Esta acción no se puede deshacer si la carpeta está vacía.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    })
+
+    if (result.isConfirmed) {
+      try {
+        await deleteFolderMutation.mutateAsync(id)
+        toastSuccess('Carpeta eliminada')
+      } catch (err: any) {
+        const msg = err.response?.data?.error || 'Error al eliminar'
+        toastError(msg)
+      }
+    }
+  }
 
   return (
     <section className={styles.page}>
       <div className={styles.header}>
         <div className={styles.headerLeft}>
-          {currentFolder ? (
-            <div className={styles.titleRow}>
-              <button
-                className="pill-btn secondary"
-                onClick={() => {
-                  const pid = (currentFolder as any).parent_id
-                  const params = new URLSearchParams(search)
-                  if (pid) {
-                    params.set('folder', String(pid))
-                  } else {
-                    params.delete('folder')
-                  }
-                  setSearch(params)
-                }}
-              >
-                Atrás
-              </button>
-              <h2 className={styles.title}>{currentFolder.name}</h2>
-            </div>
-          ) : (
-            <h2 className={styles.title}>Mis archivos</h2>
-          )}
+          <nav className="flex items-center gap-1 text-sm mb-1 overflow-hidden whitespace-nowrap">
+            {breadcrumbs.map((crumb, idx) => (
+              <React.Fragment key={crumb.id || 'root'}>
+                {idx > 0 && <ChevronRightIcon className="w-3 h-3 text-slate-400 flex-shrink-0" />}
+                <button
+                  onClick={() => {
+                    const params = new URLSearchParams(search)
+                    if (crumb.id) {
+                      params.set('folder', crumb.id)
+                    } else {
+                      params.delete('folder')
+                    }
+                    setSearch(params)
+                  }}
+                  className={`hover:text-emerald-600 transition-colors truncate ${
+                    idx === breadcrumbs.length - 1 
+                      ? 'text-slate-900 font-bold cursor-default' 
+                      : 'text-slate-500 font-medium'
+                  }`}
+                  title={crumb.name}
+                >
+                  {crumb.name}
+                </button>
+              </React.Fragment>
+            ))}
+          </nav>
+          <div className={styles.titleRow}>
+            <h2 className={styles.title}>
+              {currentFolder ? currentFolder.name : 'Mis archivos'}
+            </h2>
+          </div>
           <div className={styles.subtitle}>{subtitleText}</div>
         </div>
         <div className={styles.actions}>
@@ -250,7 +343,7 @@ export default function BoardPage() {
               <button
                 key={tab.key}
                 type="button"
-                className={`pill-btn secondary${selectedTab === tab.key ? ' active' : ''}`}
+                className={`sq-btn secondary${selectedTab === tab.key ? ' active' : ''}`}
                 onClick={() => {
                   if (tab.key === 'todos') {
                     const params = new URLSearchParams(search)
@@ -261,6 +354,7 @@ export default function BoardPage() {
                   setSelectedTab(tab.key)
                 }}
               >
+                <tab.icon className="sq-icon" />
                 {tab.label}
               </button>
             ))}
@@ -317,29 +411,78 @@ export default function BoardPage() {
               }
             }}
           />
-          <Button variant="primary" onClick={() => document.getElementById('file-input')?.click()}>Subir</Button>
-          <button className="pill-btn secondary">⋮</button>
+          <button 
+            title="Crear nueva carpeta aquí"
+            className="sq-btn secondary"
+            onClick={async () => {
+              const result = await folderCustomizer('')
+              if (result) {
+                try {
+                  await createFolderMutation.mutateAsync({ 
+                    name: result.name, 
+                    parentId: folderId,
+                    color: result.color 
+                  })
+                  toastSuccess('Carpeta creada')
+                } catch (err) {
+                  toastError('Error al crear carpeta')
+                }
+              }
+            }}
+          >
+            <FolderPlusIcon className="sq-icon" />
+            Carpeta
+          </button>
+          <button 
+            className="sq-btn green" 
+            onClick={() => document.getElementById('file-input')?.click()}
+          >
+            <ArrowUpTrayIcon className="sq-icon" />
+            Subir
+          </button>
+          <button className="sq-btn secondary" title="Más opciones">
+            <EllipsisVerticalIcon className="sq-icon" />
+          </button>
         </div>
       </div>
 
           <div className={styles.viewToggle}>
+            <div className="flex items-center gap-3 mr-4 border-r pr-4 border-slate-200">
+              <span className="text-sm font-medium text-slate-500">Ordenar:</span>
+              <select 
+                className="bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-pointer"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                title="Ordenar por"
+              >
+                <option value="date">Fecha</option>
+                <option value="name">Nombre</option>
+                <option value="size">Tamaño</option>
+              </select>
+              <button 
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                className="p-1 hover:bg-slate-100 rounded text-slate-500"
+              >
+                {sortOrder === 'asc' ? '↑' : '↓'}
+              </button>
+            </div>
             <span className={styles.viewLabel}>Vista</span>
             <div className={styles.viewButtons}>
               <button
-                className={`${styles.viewButton} ${viewMode === 'grid' ? styles.viewButtonActive : ''}`}
+                className={`sq-btn secondary ${viewMode === 'grid' ? 'active' : ''}`}
                 onClick={() => setViewMode('grid')}
                 aria-label="Vista cuadricula"
                 title="Vista cuadricula"
               >
-                <Squares2X2Icon className={styles.viewIcon} />
+                <Squares2X2Icon className="sq-icon" />
               </button>
               <button
-                className={`${styles.viewButton} ${viewMode === 'list' ? styles.viewButtonActive : ''}`}
+                className={`sq-btn secondary ${viewMode === 'list' ? 'active' : ''}`}
                 onClick={() => setViewMode('list')}
                 aria-label="Vista lista"
                 title="Vista lista"
               >
-                <Bars3BottomLeftIcon className={styles.viewIcon} />
+                <Bars3BottomLeftIcon className="sq-icon" />
               </button>
             </div>
           </div>
@@ -354,6 +497,9 @@ export default function BoardPage() {
                 onDrop={handleDrop}
                 selectedFolderId={selectedFolderId}
                 onSelect={(id) => setSelectedFolderId(id)}
+                onRename={handleRenameFolder}
+                onDelete={handleDeleteFolder}
+                onShare={(id, name) => setSharingResource({ type: 'folder', id, name })}
               />
             ) : (
               <>
@@ -365,7 +511,7 @@ export default function BoardPage() {
                       <EmptyFolder onUpload={() => document.getElementById('file-input')?.click()} />
                     ) : (
                       viewMode === 'grid' ? (
-                        <FileListView files={filteredFiles} />
+                        <FileListView files={filteredFiles} onShare={(id, name) => setSharingResource({ type: 'file', id, name })} />
                       ) : (
                         <ul className={styles.list}>
                           {filteredFiles.map((file: any) => (
@@ -376,7 +522,7 @@ export default function BoardPage() {
                     )
                   ) : (
                     viewMode === 'grid' ? (
-                      <FileListView files={filteredFiles} />
+                      <FileListView files={filteredFiles} onShare={(id, name) => setSharingResource({ type: 'file', id, name })} />
                     ) : (
                       <ul className={styles.list}>
                         {filteredFiles.map((file: any) => (
@@ -399,6 +545,15 @@ export default function BoardPage() {
               <Line data={recentActivityData} options={recentActivityOptions} />
             </div>
           </Card>
+          
+          {sharingResource && (
+            <ShareModal
+              resourceType={sharingResource.type}
+              resourceId={sharingResource.id}
+              resourceName={sharingResource.name}
+              onClose={() => setSharingResource(null)}
+            />
+          )}
       </section>
   );
 }

@@ -6,15 +6,21 @@ export const listFolders = async (parentId?: string) => {
   return res.data;
 }
 
-export const createFolder = async (name: string, parentId?: string) => {
+export const createFolder = async (name: string, parentId?: string, color?: string, icon?: string) => {
   const payload: any = { name };
   if (parentId) payload.parent_id = parentId;
+  if (color) payload.color = color;
+  if (icon) payload.icon = icon;
   const res = await api.post('/api/files/folders', payload);
   return res.data;
 }
 
-export const renameFolder = async (id: string, name: string) => {
-  const res = await api.patch(`/api/files/folders/${id}`, { name });
+export const renameFolder = async (id: string, name?: string, color?: string, icon?: string) => {
+  const payload: any = {};
+  if (name !== undefined) payload.name = name;
+  if (color !== undefined) payload.color = color;
+  if (icon !== undefined) payload.icon = icon;
+  const res = await api.patch(`/api/files/folders/${id}`, payload);
   return res.data;
 }
 

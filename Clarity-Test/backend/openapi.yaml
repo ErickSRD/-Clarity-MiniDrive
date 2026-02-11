@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
-  title: MiniDrive API
+  title: Clarity API
   version: '0.1.0'
-  description: Local-first MiniDrive API (sample OpenAPI for docs)
+  description: Local-first Clarity API (sample OpenAPI for docs)
 servers:
   - url: http://localhost:4000
 components:

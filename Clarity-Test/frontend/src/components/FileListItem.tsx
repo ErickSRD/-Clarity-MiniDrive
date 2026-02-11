@@ -100,7 +100,7 @@ export default function FileListItem({ file }: FileListItemProps) {
       : `<p style="font-size:14px;color:#475569;">Vista previa no disponible para este tipo de archivo.</p>`;
     MySwal.fire({
       title: 'Vista rápida',
-      html: `${preview}<div style="margin-top:12px;font-size:14px;"><strong>${file.name}</strong><br>${file.type || 'Tipo desconocido'}</div>${checksumRow}<button id="swal-download-btn" class="pill-btn primary" style="margin-top:14px;display:inline-flex;justify-content:center;width:100%;">📥 Descargar</button>`,
+      html: `${preview}<div style="margin-top:12px;font-size:14px;"><strong>${file.name}</strong><br>${file.type || 'Tipo desconocido'}</div>${checksumRow}<button id="swal-download-btn" class="sq-btn green" style="margin-top:14px;display:inline-flex;justify-content:center;width:100%;">📥 Descargar</button>`,
       showCloseButton: true,
       showConfirmButton: false,
       customClass: {
@@ -183,7 +183,7 @@ export default function FileListItem({ file }: FileListItemProps) {
 
       <div className={styles.menu}>
         <button
-          className={`pill-btn secondary ${styles.menuButton}`}
+          className={`sq-btn secondary ${styles.menuButton}`}
           onClick={(e) => {
             e.stopPropagation();
             setMenuOpen(!menuOpen);

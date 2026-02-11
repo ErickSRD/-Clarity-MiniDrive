@@ -17,7 +17,7 @@ export default function EmptyFolder({ onUpload }: { onUpload?: () => void }) {
       <h3>No hay archivos aquí</h3>
       <p className="muted">Esta carpeta está limpia como una libreta nueva. ¿Quieres subir algo?</p>
       <div style={{marginTop:12}}>
-        <button className="pill-btn primary" onClick={() => onUpload && onUpload()}>
+        <button className="sq-btn green" onClick={() => onUpload && onUpload()}>
           <ArrowUpTrayIcon style={{width:16,height:16,marginRight:8}} /> Subir archivos
         </button>
       </div>

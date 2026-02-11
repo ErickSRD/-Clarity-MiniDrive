@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { UserCircleIcon, EnvelopeIcon, KeyIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
+import { UserCircleIcon, EnvelopeIcon, KeyIcon, CheckCircleIcon, CheckIcon, ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import Button from '../components/Button'
 import Input from '../components/Input'
 import { useCurrentUser } from '../hooks/useCurrentUser'
@@ -156,6 +156,7 @@ export default function ProfilePage() {
             </div>
             <div className={styles.actions}>
               <Button variant="primary" type="submit" disabled={loading}>
+                {loading ? <ArrowPathIcon className="sq-icon animate-spin" /> : <CheckIcon className="sq-icon" />}
                 {loading ? 'Guardando...' : 'Guardar cambios'}
               </Button>
             </div>
@@ -217,9 +218,11 @@ export default function ProfilePage() {
                   setConfirmPassword('')
                 }}
               >
+                <XMarkIcon className="sq-icon" />
                 Cancelar
               </Button>
               <Button variant="primary" type="submit" disabled={loading}>
+                {loading ? <ArrowPathIcon className="sq-icon animate-spin" /> : <KeyIcon className="sq-icon" />}
                 {loading ? 'Actualizando...' : 'Actualizar contraseña'}
               </Button>
             </div>

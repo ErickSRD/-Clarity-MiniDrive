@@ -7,7 +7,8 @@ import {
   VideoCameraIcon,
   ArchiveBoxIcon,
   LockClosedIcon,
-  GlobeAltIcon
+  GlobeAltIcon,
+  UserPlusIcon
 } from '@heroicons/react/24/outline'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { moveFile, deleteFile, toggleFileVisibility } from '../api'
@@ -25,9 +26,10 @@ interface FileCardProps {
   type?: string
   size?: number
   isPublic?: number
+  onShare?: (id: string, name: string) => void
 }
 
-export default function FileCard({ id, name, type, size, isPublic }: FileCardProps) {
+export default function FileCard({ id, name, type, size, isPublic, onShare }: FileCardProps) {
   const isImage = type?.startsWith('image')
   const qc = useQueryClient()
   const { data: folders } = useFolders()
@@ -154,7 +156,7 @@ export default function FileCard({ id, name, type, size, isPublic }: FileCardPro
           <div style="margin-top:16px; font-weight: 500;">${name}</div>
           <div style="color: #64748b; font-size: 13px;">${type || 'Tipo desconocido'}</div>
           ${checksumRow}
-          <button id="swal-download-btn" class="pill-btn primary" style="width: 100%; margin-top: 16px;">
+          <button id="swal-download-btn" class="sq-btn green" style="width: 100%; margin-top: 16px;">
             📥 Descargar ahora
           </button>
         </div>
@@ -384,6 +386,11 @@ export default function FileCard({ id, name, type, size, isPublic }: FileCardPro
           {menuOpen && (
             <div className="options-menu">
               <button type="button" onClick={() => handleMenuAction(viewFile)}>Ver archivo</button>
+              {onShare && (
+                <button type="button" onClick={() => handleMenuAction(() => onShare(id, name))}>
+                  Compartir
+                </button>
+              )}
               <button type="button" onClick={() => handleMenuAction(handleDownload)}>Descargar</button>
               <button type="button" onClick={() => handleMenuAction(showDetails)}>Ver detalles</button>
               <button type="button" onClick={() => handleMenuAction(handleMove)} disabled={moving}>

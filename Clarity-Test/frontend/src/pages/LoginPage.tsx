@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import Input from '../components/Input'
 import Button from '../components/Button'
-import { CloudIcon, SparklesIcon, LockClosedIcon } from '@heroicons/react/24/outline'
+import { CloudIcon, SparklesIcon, LockClosedIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline'
 import styles from '../styles/pages/LoginPage.module.css'
 
 export default function LoginPage() {
@@ -88,7 +88,10 @@ export default function LoginPage() {
 
             {error && <div className={styles.error}>{error}</div>}
 
-            <Button variant="primary" type="submit" className={styles.primaryButton}>Iniciar sesion</Button>
+            <Button variant="primary" type="submit" className={styles.primaryButton}>
+              <ArrowRightOnRectangleIcon className="sq-icon" />
+              Iniciar sesión
+            </Button>
           </form>
 
         

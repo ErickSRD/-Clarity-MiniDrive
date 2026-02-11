@@ -40,6 +40,22 @@ db.serialize(() => {
       });
     }
   });
+
+  db.all("PRAGMA table_info(folders)", (err, cols) => {
+    if (err) return;
+    const hasColor = cols && cols.some((c: any) => c.name === 'color');
+    if (!hasColor) {
+      db.run('ALTER TABLE folders ADD COLUMN color TEXT', (aerr) => {
+        if (aerr) console.error('Failed to add color column to folders:', aerr);
+      });
+    }
+    const hasIcon = cols && cols.some((c: any) => c.name === 'icon');
+    if (!hasIcon) {
+      db.run('ALTER TABLE folders ADD COLUMN icon TEXT', (ierr) => {
+        if (ierr) console.error('Failed to add icon column to folders:', ierr);
+      });
+    }
+  });
 });
 
 export function logAudit(userId: number | null, action: string) {

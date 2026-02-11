@@ -2,18 +2,28 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px 20px 28px;
+  gap: 12px;
+  padding: 8px 12px 20px 8px;
 }
 
 .layoutBody {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
-  gap: 24px;
+  gap: 12px;
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
   align-items: start;
+}
+
+.sidebarClosed {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 981px) {
+  .sidebarClosed aside {
+    display: none !important;
+  }
 }
 
 .mainContent {

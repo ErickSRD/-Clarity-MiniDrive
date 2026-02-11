@@ -10,7 +10,11 @@ export default function Layout() {
   return (
     <div className={styles.layoutRoot}>
       <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} sidebarOpen={sidebarOpen} />
-      <div className={styles.layoutBody}>
+      <div 
+        className={`sidebar-overlay ${sidebarOpen ? 'mobile-open' : ''}`} 
+        onClick={() => setSidebarOpen(false)} 
+      />
+      <div className={`${styles.layoutBody} ${!sidebarOpen ? styles.sidebarClosed : ''}`}>
         <Sidebar open={sidebarOpen} />
         <main className={styles.mainContent}>
           <Outlet />

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
 import BoardPage from './pages/BoardPage'
 import ProfilePage from './pages/ProfilePage'
+import AdminPage from './pages/AdminPage'
 import RequireAuth from './components/RequireAuth'
 import Layout from './components/Layout'
 
@@ -16,6 +17,7 @@ export default function App() {
             <Route path="/" element={<BoardPage />} />
             <Route path="/board" element={<BoardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/admin" element={<AdminPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/login" replace />} />

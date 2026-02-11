@@ -49,13 +49,13 @@ router.get('/', (req, res) => {
 
 // create folder
 router.post('/folders', jsonParser, authMiddleware, (req, res) => {
-  const { name, parent_id } = req.body;
+  const { name, parent_id, color, icon } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
   const ownerId = (req as any).user?.id || null;
-  db.run('INSERT INTO folders (name, parent_id, owner_id) VALUES (?, ?, ?)', [name, parent_id || null, ownerId], function (err) {
+  db.run('INSERT INTO folders (name, parent_id, owner_id, color, icon) VALUES (?, ?, ?, ?, ?)', [name, parent_id || null, ownerId, color || null, icon || null], function (err) {
     if (err) return res.status(500).json({ error: 'db error' });
     logAudit(ownerId, `create:folder:${this.lastID}:${name}`);
-    res.json({ id: this.lastID, name });
+    res.json({ id: this.lastID, name, color, icon });
   });
 });
 
@@ -63,13 +63,13 @@ router.post('/folders', jsonParser, authMiddleware, (req, res) => {
 router.get('/folders', authMiddleware, (req, res) => {
   const parent = req.query.parent ? Number(req.query.parent) : null;
   if (parent != null) {
-    db.all('SELECT id, name, parent_id, owner_id FROM folders WHERE parent_id IS ? ORDER BY name', [parent], (err, rows) => {
+    db.all('SELECT id, name, parent_id, owner_id, color, icon FROM folders WHERE parent_id IS ? ORDER BY name', [parent], (err, rows) => {
       if (err) return res.status(500).json({ error: 'db error' });
       res.json(rows);
     });
     return;
   }
-  db.all('SELECT id, name, parent_id, owner_id FROM folders ORDER BY name', [], (err, rows) => {
+  db.all('SELECT id, name, parent_id, owner_id, color, icon FROM folders ORDER BY name', [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'db error' });
     res.json(rows);
   });
@@ -78,16 +78,21 @@ router.get('/folders', authMiddleware, (req, res) => {
 // rename folder (PATCH /api/files/folders/:id)
 router.patch('/folders/:id', jsonParser, authMiddleware, (req, res) => {
   const id = req.params.id;
-  const { name } = req.body;
-  if (!name) return res.status(400).json({ error: 'name required' });
-  db.get('SELECT owner_id, name FROM folders WHERE id = ?', [id], async (err: any, row: any) => {
+  const { name, color, icon } = req.body;
+  
+  db.get('SELECT owner_id, name, color, icon FROM folders WHERE id = ?', [id], async (err: any, row: any) => {
     if (err || !row) return res.status(404).json({ error: 'not found' });
     const user = (req as any).user;
     const allowed = await checkPermission(user.id, 'folder', Number(id), 'edit');
     if (!allowed) return res.status(403).json({ error: 'forbidden' });
-    db.run('UPDATE folders SET name = ? WHERE id = ?', [name, id], function (uerr: any) {
+
+    const newName = name !== undefined ? name : row.name;
+    const newColor = color !== undefined ? color : row.color;
+    const newIcon = icon !== undefined ? icon : row.icon;
+
+    db.run('UPDATE folders SET name = ?, color = ?, icon = ? WHERE id = ?', [newName, newColor, newIcon, id], function (uerr: any) {
       if (uerr) return res.status(500).json({ error: 'db error' });
-      logAudit(user.id, `rename:folder:${id}:${row.name}->${name}`);
+      logAudit(user.id, `update:folder:${id}:${row.name}->${newName}`);
       res.json({ updated: this.changes });
     });
   });
