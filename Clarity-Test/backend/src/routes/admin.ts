@@ -1,8 +1,12 @@
 import express from 'express';
 import db from '../db';
+import { authMiddleware } from '../middleware/auth';
 import { requireRole } from '../middleware/requireRole';
 
 const router = express.Router();
+
+// Apply authMiddleware to all admin routes
+router.use(authMiddleware);
 
 // List users (admin only)
 router.get('/users', requireRole('owner_admin'), (req, res) => {
@@ -30,7 +34,12 @@ router.post('/users/:id/role', requireRole('owner_admin'), (req, res) => {
 
 // Audit logs (admin only)
 router.get('/audit', requireRole('owner_admin'), (req, res) => {
-  db.all('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 200', [], (err, rows) => {
+  db.all(`
+    SELECT a.*, u.name as user_name, u.email as user_email 
+    FROM audit_logs a 
+    LEFT JOIN users u ON a.user_id = u.id 
+    ORDER BY a.timestamp DESC LIMIT 200
+  `, [], (err: any, rows: any) => {
     if (err) return res.status(500).json({ error: 'db error' });
     res.json(rows);
   });
