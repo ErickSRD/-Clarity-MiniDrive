@@ -23,6 +23,7 @@ async function run() {
   // Ensure schema exists
   const schemaPath = path.resolve(__dirname, '..', 'db', 'schema.sql');
   if (fs.existsSync(schemaPath)) {
+    console.log('Reading schema from:', schemaPath);
     const schema = fs.readFileSync(schemaPath, 'utf8');
     await new Promise((resolve, reject) => {
       db.exec(schema, (err) => {
@@ -30,9 +31,12 @@ async function run() {
           console.error('Failed to initialize schema:', err);
           return reject(err);
         }
+        console.log('Schema initialized successfully');
         resolve();
       });
     });
+  } else {
+    console.error('Schema file NOT found at:', schemaPath);
   }
 
   // Production Users
@@ -62,6 +66,8 @@ async function run() {
       });
     } catch (e) {
       console.error(`Failed to create ${u.name}:`, e);
+      db.close();
+      process.exit(1);
     }
   }
 

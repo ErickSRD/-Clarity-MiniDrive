@@ -65,8 +65,13 @@ sudo systemctl start clarity-backend
 # 8. Set up Production Admin
 echo "Setting up production admin user..."
 cd /var/www/clarity/backend
-# This will generate a random secure password and print it to the console
+# This will generate the defined users and schema
 DATABASE_FILE=/var/www/clarity/backend/data/minidrive.db node scripts/create_prod_admin.js
+
+# 9. Final Permissions check
+# Ensure the database directory and files are owned by www-data AFTER creation
+sudo chown -R www-data:www-data /var/www/clarity/backend/data
+sudo chmod -R 775 /var/www/clarity/backend/data
 
 echo "Setup complete! The system should be running at http://your-server-ip"
 echo "You can check the backend status with: sudo systemctl status clarity-backend"
