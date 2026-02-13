@@ -21,7 +21,7 @@ async function run() {
   
   // High-security Owner Admin
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@clarity-system.pro';
-  const adminPass = process.env.ADMIN_PASSWORD || generateRandomPassword(20);
+  const adminPass = process.env.ADMIN_PASSWORD || 'Clarity$2026@!';
 
   const users = [
     { name: 'Clarity Admin', email: adminEmail, role: 'owner_admin', password: adminPass }
