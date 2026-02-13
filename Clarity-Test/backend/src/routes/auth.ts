@@ -18,12 +18,33 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'email and password required' });
+  console.log(`[AUTH DEBUG] Login attempt for email: ${email}`);
+  
+  if (!email || !password) {
+    console.log('[AUTH DEBUG] Missing email or password');
+    return res.status(400).json({ error: 'email and password required' });
+  }
+
   db.get('SELECT * FROM users WHERE email = ?', [email], async (err: any, row: any) => {
-    if (err) return res.status(500).json({ error: 'db error' });
-    if (!row) return res.status(401).json({ error: 'invalid credentials' });
+    if (err) {
+      console.error('[AUTH DEBUG] Database error:', err);
+      return res.status(500).json({ error: 'db error' });
+    }
+    
+    if (!row) {
+      console.log(`[AUTH DEBUG] User not found: ${email}`);
+      return res.status(401).json({ error: 'invalid credentials' });
+    }
+
+    console.log(`[AUTH DEBUG] User found, comparing password for: ${email}`);
     const ok = await bcrypt.compare(password, row.password_hash);
-    if (!ok) return res.status(401).json({ error: 'invalid credentials' });
+    
+    if (!ok) {
+      console.log(`[AUTH DEBUG] Password mismatch for: ${email}`);
+      return res.status(401).json({ error: 'invalid credentials' });
+    }
+
+    console.log(`[AUTH DEBUG] Login successful for: ${email}`);
     const token = jwt.sign({ sub: row.id, role: row.role }, process.env.JWT_SECRET || 'change-me', { expiresIn: '8h' });
     res.json({ token });
   });
