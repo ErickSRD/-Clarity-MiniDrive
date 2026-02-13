@@ -1,5 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
@@ -19,6 +20,21 @@ function generateRandomPassword(length = 16) {
 async function run() {
   const db = new sqlite3.Database(dbFile);
   
+  // Ensure schema exists
+  const schemaPath = path.resolve(__dirname, '..', 'db', 'schema.sql');
+  if (fs.existsSync(schemaPath)) {
+    const schema = fs.readFileSync(schemaPath, 'utf8');
+    await new Promise((resolve, reject) => {
+      db.exec(schema, (err) => {
+        if (err) {
+          console.error('Failed to initialize schema:', err);
+          return reject(err);
+        }
+        resolve();
+      });
+    });
+  }
+
   // High-security Owner Admin
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@clarity-system.pro';
   const adminPass = process.env.ADMIN_PASSWORD || 'Clarity$2026@!';
