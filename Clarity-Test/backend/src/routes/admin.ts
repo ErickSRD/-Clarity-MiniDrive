@@ -9,7 +9,7 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // List users (admin only)
-router.get('/users', requireRole('owner_admin'), (req, res) => {
+router.get('/users', requireRole('owner_admin', 'admin'), (req, res) => {
   db.all(`
     SELECT u.id, u.email, u.name, u.role, u.created_at, SUM(f.size) as storage_used 
     FROM users u 
@@ -22,7 +22,7 @@ router.get('/users', requireRole('owner_admin'), (req, res) => {
 });
 
 // Assign role
-router.post('/users/:id/role', requireRole('owner_admin'), (req, res) => {
+router.post('/users/:id/role', requireRole('owner_admin', 'admin'), (req, res) => {
   const id = req.params.id;
   const { role } = req.body;
   if (!role) return res.status(400).json({ error: 'role required' });
@@ -33,7 +33,7 @@ router.post('/users/:id/role', requireRole('owner_admin'), (req, res) => {
 });
 
 // Audit logs (admin only)
-router.get('/audit', requireRole('owner_admin'), (req, res) => {
+router.get('/audit', requireRole('owner_admin', 'admin'), (req, res) => {
   db.all(`
     SELECT a.*, u.name as user_name, u.email as user_email 
     FROM audit_logs a 

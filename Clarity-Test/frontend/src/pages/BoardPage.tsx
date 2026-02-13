@@ -31,6 +31,7 @@ import { toastError, toastSuccess, MySwal, folderCustomizer } from '../utils/swa
 import FolderGrid from '../features/folders/components/FolderGrid'
 import AdvancedSearch from '../features/files/components/AdvancedSearch'
 import ShareModal from '../features/permissions/components/ShareModal'
+import { useCurrentUser } from '../hooks/useCurrentUser'
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import styles from '../styles/pages/BoardPage.module.css'
@@ -69,6 +70,7 @@ export default function BoardPage() {
     remove: deleteFolderMutation,
     create: createFolderMutation
   } = useFolders()
+  const { data: user } = useCurrentUser()
   const [selectedFolderId, setSelectedFolderId] = React.useState<string | null>(null)
   const [sharingResource, setSharingResource] = React.useState<{ type: 'file' | 'folder', id: string, name: string } | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -458,35 +460,39 @@ export default function BoardPage() {
               }
             }}
           />
-          <button 
-            title="Crear nueva carpeta aquí"
-            className="sq-btn secondary"
-            onClick={async () => {
-              const result = await folderCustomizer('')
-              if (result) {
-                try {
-                  await createFolderMutation.mutateAsync({ 
-                    name: result.name, 
-                    parentId: folderId,
-                    color: result.color 
-                  })
-                  toastSuccess('Carpeta creada')
-                } catch (err) {
-                  toastError('Error al crear carpeta')
-                }
-              }
-            }}
-          >
-            <FolderPlusIcon className="sq-icon" />
-            Carpeta
-          </button>
-          <button 
-            className="sq-btn green" 
-            onClick={() => document.getElementById('file-input')?.click()}
-          >
-            <ArrowUpTrayIcon className="sq-icon" />
-            Subir
-          </button>
+          {(user?.role === 'admin' || user?.role === 'editor' || user?.role === 'owner_admin') && (
+            <>
+              <button 
+                title="Crear nueva carpeta aquí"
+                className="sq-btn secondary"
+                onClick={async () => {
+                  const result = await folderCustomizer('')
+                  if (result) {
+                    try {
+                      await createFolderMutation.mutateAsync({ 
+                        name: result.name, 
+                        parentId: folderId,
+                        color: result.color 
+                      })
+                      toastSuccess('Carpeta creada')
+                    } catch (err) {
+                      toastError('Error al crear carpeta')
+                    }
+                  }
+                }}
+              >
+                <FolderPlusIcon className="sq-icon" />
+                Carpeta
+              </button>
+              <button 
+                className="sq-btn green" 
+                onClick={() => document.getElementById('file-input')?.click()}
+              >
+                <ArrowUpTrayIcon className="sq-icon" />
+                Subir
+              </button>
+            </>
+          )}
           <button className="sq-btn secondary" title="Más opciones">
             <EllipsisVerticalIcon className="sq-icon" />
           </button>

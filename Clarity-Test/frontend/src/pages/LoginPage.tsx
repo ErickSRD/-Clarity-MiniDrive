@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import api from '../services/api'
 import Input from '../components/Input'
 import Button from '../components/Button'
@@ -11,13 +12,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState('admin123')
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   // Limpiar cualquier rastro de sesión previa al entrar al login
   React.useEffect(() => {
     try {
       localStorage.clear();
+      queryClient.clear();
     } catch (e) { /* ignore */ }
-  }, []);
+  }, [queryClient]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()

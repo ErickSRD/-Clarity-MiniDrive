@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { FolderIcon, PencilIcon, TrashIcon, UserPlusIcon } from '@heroicons/react/24/outline'
+import { useCurrentUser } from '../../../hooks/useCurrentUser'
 
 type FolderGridProps = {
   folders?: Array<{ id: string; name: string; color?: string; icon?: string }>
@@ -34,6 +35,7 @@ function FolderCardItem({
   const bodyRef = useRef<HTMLDivElement>(null)
   const iconRef = useRef<any>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+  const { data: user } = useCurrentUser()
 
   useEffect(() => {
     if (bodyRef.current) {
@@ -89,24 +91,36 @@ function FolderCardItem({
               ⋮
             </button>
             {openMenuId === folder.id && (
-              <div className="options-menu options-menu-bottom-right">
+              <div className="options-menu options-menu-bottom-right" style={{ visibility: 'visible', opacity: 1, display: 'flex' }}>
                 <button type="button" onClick={(e) => handleMenuAction(e, folder.id, () => onOpen(folder.id))}>
                   <FolderIcon className="w-4 h-4 mr-2 text-slate-500" /> Abrir carpeta
                 </button>
-                {onShare && (
-                  <button type="button" onClick={(e) => handleMenuAction(e, folder.id, () => onShare(folder.id, folder.name))}>
-                    <UserPlusIcon className="w-4 h-4 mr-2 text-slate-500" /> Compartir
-                  </button>
+                
+                {/* Opciones para editores y admins */}
+                {['admin', 'editor', 'owner_admin'].includes(user?.role || '') && (
+                  <>
+                    {onShare && (
+                      <button type="button" onClick={(e) => handleMenuAction(e, folder.id, () => onShare(folder.id, folder.name))}>
+                        <UserPlusIcon className="w-4 h-4 mr-2 text-slate-500" /> Compartir
+                      </button>
+                    )}
+                    {onRename && (
+                      <button type="button" onClick={(e) => handleMenuAction(e, folder.id, () => onRename(folder.id, folder.name, folder.color))}>
+                        <PencilIcon className="w-4 h-4 mr-2 text-slate-500" /> Renombrar
+                      </button>
+                    )}
+                  </>
                 )}
-                {onRename && (
-                  <button type="button" onClick={(e) => handleMenuAction(e, folder.id, () => onRename(folder.id, folder.name, folder.color))}>
-                    <PencilIcon className="w-4 h-4 mr-2 text-slate-500" /> Renombrar
-                  </button>
-                )}
-                {onDelete && (
-                  <button type="button" onClick={(e) => handleMenuAction(e, folder.id, () => onDelete(folder.id))}>
-                    <TrashIcon className="w-4 h-4 mr-2 text-red-500" /> Eliminar
-                  </button>
+
+                {/* Opciones solo para admins */}
+                {['admin', 'owner_admin'].includes(user?.role || '') && (
+                  <>
+                    {onDelete && (
+                      <button type="button" onClick={(e) => handleMenuAction(e, folder.id, () => onDelete(folder.id))}>
+                        <TrashIcon className="w-4 h-4 mr-2 text-red-500" /> Eliminar
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             )}

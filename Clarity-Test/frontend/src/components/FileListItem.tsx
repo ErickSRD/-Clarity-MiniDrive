@@ -13,6 +13,7 @@ import { deleteFile, toggleFileVisibility, updateFileMetadata } from '../feature
 import api from '../services/api';
 import { toastError, toastSuccess, confirm } from '../utils/swal';
 import MySwal from '../utils/swal';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 import styles from '../styles/components/FileListItem.module.css';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
@@ -26,6 +27,7 @@ export default function FileListItem({ file }: FileListItemProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
   const qc = useQueryClient();
+  const { data: user } = useCurrentUser();
   
   // Click outside to close menu
   React.useEffect(() => {
@@ -290,40 +292,50 @@ export default function FileListItem({ file }: FileListItemProps) {
                 <ArrowDownTrayIcon className="w-4 h-4 mr-2" /> Descargar
               </button>
             </li>
-            <li>
-              <button
-                type="button"
-                onClick={(e) => handleMenuAction(e, handleClassify)}
-                className={styles.menuItem}
-              >
-                <PencilSquareIcon className="w-4 h-4 mr-2" /> Categorías
-              </button>
-            </li>
-            <li>
-              <button
-                type="button"
-                onClick={(e) => handleMenuAction(e, handleToggleVisibility)}
-                disabled={visibilityMutation.isPending}
-                className={styles.menuItem}
-              >
-                {file.is_public ? (
-                  <><LockClosedIcon className="w-4 h-4 mr-2" /> Hacer privado</>
-                ) : (
-                  <><GlobeAltIcon className="w-4 h-4 mr-2" /> Hacer público</>
-                )}
-              </button>
-            </li>
-            <li className={styles.divider} />
-            <li>
-              <button
-                type="button"
-                onClick={(e) => handleMenuAction(e, handleDelete)}
-                disabled={deleteMutation.isPending}
-                className={`${styles.menuItem} ${styles.menuItemDanger}`}
-              >
-                <TrashIcon className="w-4 h-4 mr-2" /> Eliminar
-              </button>
-            </li>
+            
+            {(user?.role === 'admin' || user?.role === 'editor' || user?.role === 'owner_admin') && (
+              <>
+                <li>
+                  <button
+                    type="button"
+                    onClick={(e) => handleMenuAction(e, handleClassify)}
+                    className={styles.menuItem}
+                  >
+                    <PencilSquareIcon className="w-4 h-4 mr-2" /> Categorías
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={(e) => handleMenuAction(e, handleToggleVisibility)}
+                    disabled={visibilityMutation.isPending}
+                    className={styles.menuItem}
+                  >
+                    {file.is_public ? (
+                      <><LockClosedIcon className="w-4 h-4 mr-2" /> Hacer privado</>
+                    ) : (
+                      <><GlobeAltIcon className="w-4 h-4 mr-2" /> Hacer público</>
+                    )}
+                  </button>
+                </li>
+              </>
+            )}
+
+            {(user?.role === 'admin' || user?.role === 'owner_admin') && (
+              <>
+                <li className={styles.divider} />
+                <li>
+                  <button
+                    type="button"
+                    onClick={(e) => handleMenuAction(e, handleDelete)}
+                    disabled={deleteMutation.isPending}
+                    className={`${styles.menuItem} ${styles.menuItemDanger}`}
+                  >
+                    <TrashIcon className="w-4 h-4 mr-2" /> Eliminar
+                  </button>
+                </li>
+              </>
+            )}
           </ul>
         )}
       </div>

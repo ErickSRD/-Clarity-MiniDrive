@@ -6,6 +6,7 @@ import bodyParser from 'body-parser';
 import crypto from 'crypto';
 import db, { logAudit, checkPermission } from '../db';
 import { authMiddleware, optionalAuth } from '../middleware/auth';
+import { requireRole } from '../middleware/requireRole';
 import mime from 'mime-types';
 
 const router = express.Router();
@@ -94,7 +95,7 @@ router.get('/search', authMiddleware, (req, res) => {
 });
 
 // create folder
-router.post('/folders', jsonParser, authMiddleware, (req, res) => {
+router.post('/folders', jsonParser, authMiddleware, requireRole('admin', 'editor', 'owner_admin'), (req, res) => {
   const { name, parent_id, color, icon } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
   const ownerId = (req as any).user?.id || null;
@@ -122,7 +123,7 @@ router.get('/folders', authMiddleware, (req, res) => {
 });
 
 // rename folder (PATCH /api/files/folders/:id)
-router.patch('/folders/:id', jsonParser, authMiddleware, (req, res) => {
+router.patch('/folders/:id', jsonParser, authMiddleware, requireRole('admin', 'editor', 'owner_admin'), (req, res) => {
   const id = req.params.id;
   const { name, color, icon } = req.body;
   
@@ -145,7 +146,7 @@ router.patch('/folders/:id', jsonParser, authMiddleware, (req, res) => {
 });
 
 // delete folder (DELETE /api/files/folders/:id) - recursive delete
-router.delete('/folders/:id', authMiddleware, async (req, res) => {
+router.delete('/folders/:id', authMiddleware, requireRole('admin', 'owner_admin'), async (req, res) => {
   const id = req.params.id;
   const user = (req as any).user;
 
@@ -219,7 +220,7 @@ router.delete('/folders/:id', authMiddleware, async (req, res) => {
   }
 });
 
-router.post('/', authMiddleware, upload.array('files'), async (req, res) => {
+router.post('/', authMiddleware, requireRole('admin', 'editor', 'owner_admin'), upload.array('files'), async (req, res) => {
   const files = req.files as Express.Multer.File[] | undefined;
   if (!files || files.length === 0) return res.status(400).json({ error: 'no files uploaded' });
 
@@ -633,7 +634,7 @@ router.get('/:id/hash', optionalAuth, (req, res) => {
 
 
 // PATCH /:id/visibility - must be before /:id
-router.patch('/:id/visibility', jsonParser, authMiddleware, (req, res) => {
+router.patch('/:id/visibility', jsonParser, authMiddleware, requireRole('admin', 'editor', 'owner_admin'), (req, res) => {
   const id = req.params.id;
   const { is_public } = req.body;
   if (typeof is_public !== 'boolean' && typeof is_public !== 'number') {
@@ -656,7 +657,7 @@ router.patch('/:id/visibility', jsonParser, authMiddleware, (req, res) => {
 });
 
 // PATCH /:id/move - must be before /:id
-router.patch('/:id/move', jsonParser, authMiddleware, (req, res) => {
+router.patch('/:id/move', jsonParser, authMiddleware, requireRole('admin', 'editor', 'owner_admin'), (req, res) => {
   const id = req.params.id;
   const { folder_id } = req.body;
   db.get('SELECT owner_id, name FROM files WHERE id = ?', [id], async (err: any, row: any) => {
@@ -682,7 +683,7 @@ router.get('/:id', authMiddleware, (req, res) => {
 });
 
 // PATCH /:id - update file metadata (after specific routes)
-router.patch('/:id', jsonParser, authMiddleware, (req, res) => {
+router.patch('/:id', jsonParser, authMiddleware, requireRole('admin', 'editor', 'owner_admin'), (req, res) => {
   const id = req.params.id;
   const { name, department, tags } = req.body;
   
@@ -705,7 +706,7 @@ router.patch('/:id', jsonParser, authMiddleware, (req, res) => {
 });
 
 // DELETE /:id - delete file (after specific routes)
-router.delete('/:id', authMiddleware, (req, res) => {
+router.delete('/:id', authMiddleware, requireRole('admin', 'owner_admin'), (req, res) => {
   const id = req.params.id;
   db.get('SELECT path, owner_id, name FROM files WHERE id = ?', [id], async (err: any, row: any) => {
     if (err || !row) return res.status(404).json({ error: 'not found' });

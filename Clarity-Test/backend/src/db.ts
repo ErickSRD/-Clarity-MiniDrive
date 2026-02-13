@@ -120,9 +120,9 @@ export function revokePermission(granterId: number | null, userId: number, resou
 export function checkPermission(userId: number | null, resourceType: string, resourceId: number | null, permissionType: string) {
   return new Promise<boolean>((resolve) => {
     if (!userId) return resolve(false);
-    // owner_admin bypass
+    // role bypass (admin/owner_admin)
     db.get('SELECT role FROM users WHERE id = ?', [userId], (err: any, urow: any) => {
-      if (!err && urow && urow.role === 'owner_admin') return resolve(true);
+      if (!err && urow && (urow.role === 'owner_admin' || urow.role === 'admin')) return resolve(true);
 
       // if checking a file or folder, owner also bypasses
       if ((resourceType === 'file' || resourceType === 'folder') && resourceId != null) {

@@ -3,17 +3,20 @@ import Button from './Button'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { MagnifyingGlassIcon, ArrowUpTrayIcon, BellIcon, Cog6ToothIcon, Bars3Icon } from '@heroicons/react/24/outline'
 import { useCurrentUser } from '../hooks/useCurrentUser'
+import { useQueryClient } from '@tanstack/react-query'
 
 export default function Navbar({ onToggleSidebar, sidebarOpen }: { onToggleSidebar?: () => void; sidebarOpen?: boolean }) {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const { data: user } = useCurrentUser()
+  const queryClient = useQueryClient()
   const searchQuery = searchParams.get('q') || ''
 
   function logout() {
     try { 
       localStorage.clear()
+      queryClient.clear()
     } catch {}
     navigate('/login')
   }

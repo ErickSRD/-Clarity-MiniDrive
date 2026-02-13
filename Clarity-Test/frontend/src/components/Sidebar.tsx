@@ -41,6 +41,7 @@ function FolderNode({
   const [expanded, setExpanded] = React.useState(false)
   const [menuOpen, setMenuOpen] = React.useState(false)
   const menuRef = React.useRef<HTMLDivElement>(null)
+  const { data: user } = useCurrentUser()
   const children = allFolders.filter(f => Number(f.parent_id) === Number(folder.id))
   const hasChildren = children.length > 0
   const isActive = String(folder.id) === String(currentFolderId)
@@ -125,14 +126,23 @@ function FolderNode({
             </button>
             {menuOpen && (
               <div className="options-menu tree-menu">
-                <button type="button" onClick={(e) => handleMenuAction(e, () => onCreateSub(folder.id))}>
-                  <PlusIcon className="w-4 h-4 mr-2 text-slate-500" /> Nueva sub-carpeta
-                </button>
-                <button type="button" onClick={(e) => handleMenuAction(e, () => onRename(folder.id, folder.name, folder.color))}>
-                  <PencilSquareIcon className="w-4 h-4 mr-2 text-slate-500" /> Renombrar
-                </button>
-                <button type="button" onClick={(e) => handleMenuAction(e, () => onDelete(folder.id))}>
-                  <TrashIcon className="w-4 h-4 mr-2 text-red-500" /> Eliminar
+                {(user?.role === 'admin' || user?.role === 'editor' || user?.role === 'owner_admin') && (
+                  <>
+                    <button type="button" onClick={(e) => handleMenuAction(e, () => onCreateSub(folder.id))}>
+                      <PlusIcon className="w-4 h-4 mr-2 text-slate-500" /> Nueva sub-carpeta
+                    </button>
+                    <button type="button" onClick={(e) => handleMenuAction(e, () => onRename(folder.id, folder.name, folder.color))}>
+                      <PencilSquareIcon className="w-4 h-4 mr-2 text-slate-500" /> Renombrar
+                    </button>
+                  </>
+                )}
+                {(user?.role === 'admin' || user?.role === 'owner_admin') && (
+                  <button type="button" onClick={(e) => handleMenuAction(e, () => onDelete(folder.id))}>
+                    <TrashIcon className="w-4 h-4 mr-2 text-red-500" /> Eliminar
+                  </button>
+                )}
+                <button type="button" onClick={(e) => handleMenuAction(e, () => onOpen(folder.id))}>
+                  <ChevronRightIcon className="w-4 h-4 mr-2 text-slate-500" /> Ver contenidos
                 </button>
               </div>
             )}
@@ -221,10 +231,12 @@ export default function Sidebar({ open }: { open?: boolean }) {
   return (
     <aside className={`sidebar glass-card ${open ? 'open' : ''}`}>
       <div className="sidebar-inner">
-        <button onClick={handleCreate} className="sq-btn green new-folder-btn">
-          <FolderPlusIcon className="sq-icon" />
-          <span>Nueva carpeta</span>
-        </button>
+        {(user?.role === 'admin' || user?.role === 'editor' || user?.role === 'owner_admin') && (
+          <button onClick={handleCreate} className="sq-btn green new-folder-btn">
+            <FolderPlusIcon className="sq-icon" />
+            <span>Nueva carpeta</span>
+          </button>
+        )}
       </div>
       <nav className="sidebar-inner">
         <ul>
@@ -232,16 +244,22 @@ export default function Sidebar({ open }: { open?: boolean }) {
           <li onClick={() => navigate('/board?tab=busqueda')} className="side-item">
             <MagnifyingGlassIcon className="icon-svg" /> Búsqueda
           </li>
-          <li onClick={() => navigate('/reports')} className="side-item">
-            <ChartBarIcon className="icon-svg" /> Reportes
-          </li>
-          <li onClick={() => navigate('/taxonomy')} className="side-item">
-            <TagIcon className="icon-svg" /> Etiquetas y Deptos.
-          </li>
-          {(user?.role === 'admin' || user?.role === 'owner_admin' || (user as any)?.role === 'admin') && (
-            <li onClick={() => navigate('/admin')} className="side-item">
-              <ShieldCheckIcon className="icon-svg" /> Administrador
+          
+          {(user?.role === 'admin' || user?.role === 'editor' || user?.role === 'owner_admin') && (
+            <li onClick={() => navigate('/reports')} className="side-item">
+              <ChartBarIcon className="icon-svg" /> Reportes
             </li>
+          )}
+
+          {(user?.role === 'admin' || user?.role === 'owner_admin') && (
+            <>
+              <li onClick={() => navigate('/taxonomy')} className="side-item">
+                <TagIcon className="icon-svg" /> Etiquetas y Deptos.
+              </li>
+              <li onClick={() => navigate('/admin')} className="side-item">
+                <ShieldCheckIcon className="icon-svg" /> Administrador
+              </li>
+            </>
           )}
         </ul>
 

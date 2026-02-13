@@ -21,6 +21,7 @@ import api from '../../../services/api'
 import { useFolders } from '../../folders/hooks/useFolders'
 import { confirm, select, toastError, toastSuccess } from '../../../utils/swal'
 import MySwal from '../../../utils/swal'
+import { useCurrentUser } from '../../../hooks/useCurrentUser'
 import styles from '../../../styles/components/FileCard.module.css'
 import { PencilSquareIcon } from '@heroicons/react/24/outline'
 
@@ -42,6 +43,7 @@ export default function FileCard({ id, name, type, size, isPublic, department, t
   const isImage = type?.startsWith('image')
   const qc = useQueryClient()
   const { data: folders } = useFolders()
+  const { data: user } = useCurrentUser()
   const [moving, setMoving] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -441,7 +443,7 @@ export default function FileCard({ id, name, type, size, isPublic, department, t
         <div className="options-wrapper" ref={menuRef}>
           <button
             type="button"
-            className="options-trigger"
+            className="options-trigger-pill"
             onClick={(e) => {
               e.stopPropagation()
               setMenuOpen(!menuOpen)
@@ -462,25 +464,34 @@ export default function FileCard({ id, name, type, size, isPublic, department, t
               <button type="button" onClick={(e) => handleMenuAction(e, handleDownload)}>
                 <ArrowDownTrayIcon className="w-4 h-4 mr-2 text-slate-500" /> Descargar
               </button>
-              <button type="button" onClick={(e) => handleMenuAction(e, handleClassify)}>
-                <PencilSquareIcon className="w-4 h-4 mr-2 text-slate-500" /> Categorías
-              </button>
+              
+              {(user?.role === 'admin' || user?.role === 'editor' || user?.role === 'owner_admin') && (
+                <>
+                  <button type="button" onClick={(e) => handleMenuAction(e, handleClassify)}>
+                    <PencilSquareIcon className="w-4 h-4 mr-2 text-slate-500" /> Categorías
+                  </button>
+                  <button type="button" onClick={(e) => handleMenuAction(e, handleMove)} disabled={moving}>
+                    <ArrowPathRoundedSquareIcon className="w-4 h-4 mr-2 text-slate-500" /> {moving ? 'Moviendo…' : 'Mover'}
+                  </button>
+                  <button type="button" onClick={(e) => handleMenuAction(e, handleToggleVisibility)} disabled={visibility.isPending}>
+                    {isPublic ? (
+                      <><LockClosedIcon className="w-4 h-4 mr-2 text-slate-500" /> Hacer privado</>
+                    ) : (
+                      <><GlobeAltIcon className="w-4 h-4 mr-2 text-slate-500" /> Hacer público</>
+                    )}
+                  </button>
+                </>
+              )}
+
               <button type="button" onClick={(e) => handleMenuAction(e, showDetails)}>
                 <InformationCircleIcon className="w-4 h-4 mr-2 text-slate-500" /> Ver detalles
               </button>
-              <button type="button" onClick={(e) => handleMenuAction(e, handleMove)} disabled={moving}>
-                <ArrowPathRoundedSquareIcon className="w-4 h-4 mr-2 text-slate-500" /> {moving ? 'Moviendo…' : 'Mover'}
-              </button>
-              <button type="button" onClick={(e) => handleMenuAction(e, handleToggleVisibility)} disabled={visibility.isPending}>
-                {isPublic ? (
-                  <><LockClosedIcon className="w-4 h-4 mr-2 text-slate-500" /> Hacer privado</>
-                ) : (
-                  <><GlobeAltIcon className="w-4 h-4 mr-2 text-slate-500" /> Hacer público</>
-                )}
-              </button>
-              <button type="button" onClick={(e) => handleMenuAction(e, handleDelete)} disabled={del.isPending} className="danger">
-                <TrashIcon className="w-4 h-4 mr-2 text-red-500" /> {del.isPending ? 'Eliminando…' : 'Eliminar'}
-              </button>
+
+              {(user?.role === 'admin' || user?.role === 'owner_admin') && (
+                <button type="button" onClick={(e) => handleMenuAction(e, handleDelete)} disabled={del.isPending} className="danger">
+                  <TrashIcon className="w-4 h-4 mr-2 text-red-500" /> {del.isPending ? 'Eliminando…' : 'Eliminar'}
+                </button>
+              )}
             </div>
           )}
         </div>

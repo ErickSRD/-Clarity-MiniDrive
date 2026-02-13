@@ -1,0 +1,17 @@
+[Unit]
+Description=Clarity Backend Service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/clarity/backend
+Environment=NODE_ENV=production
+Environment=PORT=4000
+Environment=DATABASE_FILE=/var/www/clarity/backend/data/minidrive.db
+ExecStart=/usr/bin/node /var/www/clarity/backend/dist/server.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
