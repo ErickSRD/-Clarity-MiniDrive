@@ -35,39 +35,39 @@ async function run() {
     });
   }
 
-  // High-security Owner Admin
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@clarity-system.pro';
-  const adminPass = process.env.ADMIN_PASSWORD || 'Clarity$2026@!';
-
+  // Production Users
+  const defaultPassword = 'Clarity$2026@!';
+  
   const users = [
-    { name: 'Clarity Admin', email: adminEmail, role: 'owner_admin', password: adminPass }
+    { name: 'Clarity Admin', email: 'admin@clarity-system.pro', role: 'owner_admin', password: defaultPassword },
+    { name: 'Clarity Editor', email: 'editor@clarity-system.pro', role: 'editor', password: defaultPassword },
+    { name: 'Clarity Viewer', email: 'viewer@clarity-system.pro', role: 'viewer', password: defaultPassword }
   ];
 
-  console.log('--- PRODUCTION USER INITIALIZATION ---');
+  console.log('--- PRODUCTION USERS INITIALIZATION ---');
 
   for (const u of users) {
     try {
       const pwHash = await hash(u.password);
       await new Promise((resolve, reject) => {
-        // delete any existing user with same email or name to reset
+        // delete any existing user with same email to reset
         db.run('DELETE FROM users WHERE email = ?', [u.email], (dErr) => {
           if (dErr) return reject(dErr);
           db.run('INSERT INTO users (email, name, password_hash, role) VALUES (?, ?, ?, ?)', [u.email, u.name, pwHash, u.role], function (err) {
             if (err) return reject(err);
-            console.log('--------------------------------------------------');
-            console.log(`CREATED PRODUCTION OWNER ADMIN`);
-            console.log(`Email:    ${u.email}`);
-            console.log(`Password: ${u.password}`);
-            console.log('IMPORTANT: Save these credentials immediately!');
-            console.log('--------------------------------------------------');
+            console.log(`CREATED USER: ${u.name} | Role: ${u.role} | Email: ${u.email}`);
             resolve();
           });
         });
       });
     } catch (e) {
-      console.error('Failed to create admin user:', e);
+      console.error(`Failed to create ${u.name}:`, e);
     }
   }
+
+  console.log('--------------------------------------------------');
+  console.log('ALL PASSWORDS SET TO: Clarity$2026@!');
+  console.log('--------------------------------------------------');
 
   db.close();
 }
