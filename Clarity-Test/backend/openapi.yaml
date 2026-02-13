@@ -5,9 +5,7 @@ info:
   description: Local-first Clarity API (sample OpenAPI for docs)
 servers:
   - url: /
-    description: Current Server (Production)
-  - url: http://localhost:4000
-    description: Local Development
+    description: Production Server
 components:
   securitySchemes:
     bearerAuth:

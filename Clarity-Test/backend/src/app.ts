@@ -31,7 +31,11 @@ try {
 }
 
 // CORS configuration
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Aplicar bodyParser.json() PRIMERO para todas las rutas que lo necesiten
 app.use(bodyParser.json());
