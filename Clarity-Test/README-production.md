@@ -40,7 +40,7 @@ sudo npm install -g pm2
 
 ### 2. Construcción (Build)
 - **Backend**: Genera el código JavaScript en la carpeta `dist`.
-- **Frontend**: Genera los archivos estáticos optimizados. Es crucial establecer `VITE_API_BASE=/api` para que las peticiones se redirijan correctamente a través de Nginx.
+- **Frontend**: Genera los archivos estáticos optimizados. Es crucial establecer `VITE_API_BASE=""` para que las peticiones se redirijan correctamente a través de Nginx (ya que el código ya incluye el prefijo `/api`).
 
 ### 3. Gestión del Backend como Servicio (Systemd)
 El backend se instala como un servicio del sistema llamado `clarity-backend`. Esto asegura que se inicie automáticamente con el servidor y se reinicie en caso de fallo.

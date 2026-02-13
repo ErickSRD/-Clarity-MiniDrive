@@ -45,8 +45,8 @@ sudo chmod -R 755 /var/www/clarity/backend
 
 cd /var/www/clarity/frontend
 npm install
-# Set VITE_API_BASE to /api because Nginx will proxy /api to the backend
-VITE_API_BASE=/api npm run build
+# Set VITE_API_BASE to empty because the frontend code already includes '/api/' in its paths
+VITE_API_BASE="" npm run build
 
 # 6. Configure Nginx
 echo "Configuring Nginx..."
